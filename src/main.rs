@@ -39,6 +39,21 @@ mod usb;
 use crate::usb::usb::usb_thd;
 mod http;
 use crate::http::http::http_server;
+mod font12;
+use crate::font12::font12::*;
+mod font16;
+use crate::font16::font16::*;
+mod font20;
+use crate::font20::font20::*;
+mod font24;
+use crate::font24::font24::*;
+mod font50;
+use crate::font50::font50::*;
+mod font8;
+use crate::font8::font8::*;
+mod font48;
+use crate::font48::font48::*;
+
 use rand::Rng;
 use terminate_thread::Thread;
 
@@ -135,23 +150,31 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn gpio_init(l: &mut Lcd, s: crossbeam_channel::Sender<BlMode>) -> Result<(), Box<dyn Error>> {
-    l.lcd_reset();
-    l.lcd_set_window(0, 0, LCD_WIDTH, LCD_HEIGHT).unwrap();
+    l.lcd_init();
+    // l.lcd_set_window(0, 0, IMG_WIDTH, IMG_HEIGHT).unwrap();
+    spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));
+    l.img_clear(WHITE);
 
-    l.img_clear(RED);
-    l.img_draw_rect(10, 10, 100, 100, GREEN);
-    // l.lcd_set_window(20, 20, 30, 30).unwrap();
-    // l.img_draw_rect(
-    //     10 * 128 / 132,
-    //     10 * 128 / 162,
-    //     100 * 128 / 132,
-    //     100 * 128 / 162,
-    //     GREEN,
-    // );
-    // l.img_draw_pixel(40, 40, BLACK);
-    l.img_draw_image(0, 0, LCD_WIDTH, LCD_HEIGHT);
+    // l.lcd_set_window(20, 20, LCD_WIDTH - 30, LCD_HEIGHT - 30)
+    //    .unwrap();
 
-    l.lcd_fill_rect(10, 10, 100, 100, GRED).unwrap();
+    // l.lcd_set_window(0, 0, 64, 132).unwrap();
+    l.img_draw_rect(0, 0, IMG_WIDTH, IMG_HEIGHT * 2, BLUE);
+    l.img_draw_rect(10, 20, 50, 128, GREEN);
+    l.img_draw_rect(60, 200, 20, 30, RED);
+    // l.img_draw_pixel(260 / 2, 260 / 2, BLACK);
+    l.img_draw_pixel(32, 132, WHITE);
+    l.img_draw_pixel(64, 132, WHITE);
+    l.img_draw_pixel(64, 29, WHITE);
+    l.img_draw_pixel(64, 200, WHITE);
 
+    // l.lcd_fill_rect(10, 10, 20, 30, RED).unwrap();
+    // l.lcd_fill_rect(0, 0, 64, 128, GRED).unwrap();
+
+    l.img_draw_char(20, 40, 'a', &FONT8, WHITE, BLACK);
+    l.img_draw_char(32, 100, 'A', &FONT50, BLUE, RED);
+    l.img_draw_string(10, 10, String::from("Hello"), &FONT16, RED, BLACK);
+
+    l.img_draw_image(0, 0, IMG_WIDTH, IMG_HEIGHT);
     return Ok(());
 }

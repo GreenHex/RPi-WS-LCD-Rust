@@ -14,15 +14,18 @@ pub mod defs {
     pub type UWORD = u16;
     pub type UDOUBLE = u32;
 
-    pub const LCD_HEIGHT: u16 = 128;
-    pub const LCD_WIDTH: u16 = 128;
+    pub const LCD_WIDTH: usize = 128;
+    pub const LCD_HEIGHT: usize = 128;
 
-    pub const LCD_X_CORRECTION: u16 = 2;
-    pub const LCD_Y_CORRECTION: u16 = 1;
+    pub const IMG_WIDTH: usize = 128;
+    pub const IMG_HEIGHT: usize = 128;
 
-    pub const LCD_ORIENTATION: LcdOrientation = LcdOrientation::Rotate0;
+    pub const LCD_X_CORRECTION: usize = 0;
+    pub const LCD_Y_CORRECTION: usize = 0;
 
-    pub const LCD_COLOUR_DEPTH: u16 = 2; // bytes
+    pub const LCD_ORIENTATION: LcdOrientation = LcdOrientation::Rotate90;
+
+    pub const LCD_COLOUR_DEPTH: usize = 2; // bytes
 
     pub const LCD_CLK: UBYTE = 11;
     pub const LCD_MOSI: UBYTE = 10;
@@ -62,6 +65,12 @@ pub mod defs {
         Rotate90,
         Rotate180,
         Rotate270,
+    }
+
+    pub struct FontTable<const N: usize> {
+        pub table: [u8; N],
+        pub width: usize,
+        pub height: usize,
     }
 
     #[macro_export]
