@@ -1,6 +1,6 @@
 #![allow(unused_imports, dead_code, unused_assignments, unused_variables)]
 /**
- * dev.rs
+ * main.rs
  * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
  * 30-May-2025
  *
@@ -39,21 +39,14 @@ mod usb;
 use crate::usb::usb::usb_thd;
 mod http;
 use crate::http::http::http_server;
-mod font12;
-use crate::font12::font12::*;
-mod font16;
-use crate::font16::font16::*;
-mod font20;
-use crate::font20::font20::*;
-mod font24;
-use crate::font24::font24::*;
-mod font50;
-use crate::font50::font50::*;
-mod font8;
-use crate::font8::font8::*;
-mod font48;
-use crate::font48::font48::*;
-
+mod fonts;
+use crate::fonts::font8::font8::*;
+use crate::fonts::font12::font12::*;
+use crate::fonts::font16::font16::*;
+use crate::fonts::font20::font20::*;
+use crate::fonts::font24::font24::*;
+use crate::fonts::font48::font48::*;
+use crate::fonts::font50::font50::*;
 use rand::Rng;
 use terminate_thread::Thread;
 
@@ -68,11 +61,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     JournalLog::new()
         .unwrap()
         .with_extra_fields(vec![("VERSION", env!("CARGO_PKG_VERSION"))])
-        .with_syslog_identifier(String::from("LCD"))
-        //     systemd_journal_logger::current_exe_identifier()
-        //         .expect("Error: systemd_journal_logger::current_exe_identifier()")
-        //         .to_string(),
-        // )
+        .with_syslog_identifier(
+            // String::from(exe_name.clone()))
+            systemd_journal_logger::current_exe_identifier()
+                .expect("Error: systemd_journal_logger::current_exe_identifier()")
+                .to_string(),
+        )
         .install()
         .unwrap();
     log::set_max_level(LevelFilter::Info);
@@ -174,6 +168,8 @@ fn gpio_init(l: &mut Lcd, s: crossbeam_channel::Sender<BlMode>) -> Result<(), Bo
     l.img_draw_char(20, 40, 'a', &FONT8, WHITE, BLACK);
     l.img_draw_char(32, 100, 'A', &FONT50, BLUE, RED);
     l.img_draw_string(10, 10, String::from("Hello"), &FONT16, RED, BLACK);
+
+    l.img_draw_string(12, 50, String::from("Hello"), &FONT8, BLUE, GREEN);
 
     l.img_draw_image(0, 0, IMG_WIDTH, IMG_HEIGHT);
     return Ok(());

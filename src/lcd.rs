@@ -7,8 +7,6 @@
 
 pub mod lcd {
     use crate::defs::defs::*;
-    use crate::font8::font8::*;
-    use crate::font20::font20::*;
     use crate::gpio::gpio::*;
     use crate::spi::spi::*;
     use log::{LevelFilter, debug, error, info, warn};
@@ -272,7 +270,7 @@ pub mod lcd {
             for j in (0..font.height).step_by(1) {
                 for i in 0..font.width {
                     let pos = 0x80 >> (i % 8);
-                    if (font.table[char_offset as usize] & pos) != 0 {
+                    if (font.table[char_offset] & pos) != 0 {
                         self.img_draw_pixel_font(x + i, y + j * 2, colour_fg);
                     } else {
                         self.img_draw_pixel_font(x + i, y + j * 2, colour_bg);
@@ -336,6 +334,7 @@ pub mod lcd {
             self
         }
 
+        // print array for debugging
         pub fn img_print_data(&self) {
             let mut chunks = self.image.chunks((IMG_WIDTH * LCD_COLOUR_DEPTH) as usize);
 
@@ -354,19 +353,6 @@ pub mod lcd {
                 }
             }
         }
-
-        pub fn lcd_draw_sprite(
-            &mut self,
-            x: usize,
-            y: usize,
-            w: usize,
-            h: usize,
-            data: &[u8],
-        ) -> Result<(), LcdError> {
-            self.lcd_set_window(x, y, x + w, y + h).unwrap();
-            spi_write_data_array(&data);
-            Ok(())
-        }
     }
     #[derive(Debug)]
     pub enum LcdError {
@@ -375,7 +361,6 @@ pub mod lcd {
     }
 
     // REF: https://github.com/maciekglowka/lcd-ili9341-spi/blob/main/src/commands.rs
-
     pub const ENTER_SLEEP_MODE: u8 = 0x10;
     pub const SLEEP_OUT: u8 = 0x11;
     pub const PARTIAL_MODE_ON: u8 = 0x12;
@@ -503,6 +488,7 @@ pub mod lcd {
         Data(0x0F),
     ];
 
+    // alternate initializing sequence
     pub const LCD_INIT_SEQ2: [CmdOrData; 76] = [
         Cmd(0xB1),
         Data(0x01),
