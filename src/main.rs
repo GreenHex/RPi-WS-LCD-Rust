@@ -12,8 +12,11 @@ use rppal::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
 use serde_json::json;
 use serde_json::{Value, from_str};
 use signal_hook::consts::TERM_SIGNALS;
+use signal_hook::consts::*;
 use signal_hook::flag;
+use signal_hook::iterator::Signals;
 use signal_hook::low_level::exit;
+use signal_hook::*;
 use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
@@ -50,7 +53,7 @@ use crate::fonts::font50::font50::*;
 use rand::Rng;
 use terminate_thread::Thread;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let exe_name = std::env::current_exe()
         .expect("Can't get the exec path")
         .file_name()
@@ -69,7 +72,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         )
         .install()
         .unwrap();
-    log::set_max_level(LevelFilter::Info);
+    log::set_max_level(LevelFilter::Debug);
 
     info!("[{exe_name}] started");
 
@@ -78,6 +81,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
         flag::register(*sig, Arc::clone(&term_now))?;
     }
+
+    let mut signals = Signals::new(&[SIGUSR1, SIGUSR2])?;
+    let handle = signals.handle();
 
     let exit_flag = Arc::new(Mutex::new(false));
     let exit_flag_pwm = exit_flag.clone();
@@ -96,10 +102,31 @@ fn main() -> Result<(), Box<dyn Error>> {
         .with_orientation(LCD_ORIENTATION)
         .with_max_buffer_size(64);
 
-    let _ = gpio_init(&mut l, _s2);
+    let _ = gpio_init(&mut l, &_s2);
 
-    while !term_now.load(Ordering::Relaxed) { // MAIN LOOP
+    while !term_now.load(Ordering::Relaxed) {
+        // MAIN LOOP
+
+        'inner: for signal in signals.pending() {
+            match signal {
+                SIGUSR1 => {
+                    debug!("{}(): Recd SIGUSR1", func_name!());
+                    _s2.send(BlMode::Off).unwrap();
+                    break 'inner;
+                }
+                SIGUSR2 => {
+                    debug!("{}(): Recd SIGUSR2", func_name!());
+                    _s2.send(BlMode::On).unwrap();
+                    break 'inner;
+                }
+                _ => {
+                    break 'inner;
+                }
+            }
+        }
     }
+    drop(_s2);
+    handle.close();
 
     let mut exit_flag_p = exit_flag.lock().unwrap();
     *exit_flag_p = true;
@@ -140,10 +167,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     info!("http_server() thread (probably) ended");
 
     info!("[{exe_name}] exited");
-    return Ok(());
+
+    Ok(())
 }
 
-fn gpio_init(l: &mut Lcd, s: crossbeam_channel::Sender<BlMode>) -> Result<(), Box<dyn Error>> {
+fn gpio_init(l: &mut Lcd, s: &crossbeam_channel::Sender<BlMode>) -> Result<(), Box<dyn Error>> {
     l.lcd_init();
     // l.lcd_set_window(0, 0, IMG_WIDTH, IMG_HEIGHT).unwrap();
     spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));

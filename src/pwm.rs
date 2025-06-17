@@ -24,7 +24,9 @@ pub mod pwm {
     pub enum BlMode {
         Toggle = 1,
         Step = 2,
-        Medium = 3,
+        Mid = 3,
+        Off = 4,
+        On = 5,
     }
 
     pub fn bl_pwm(r: crossbeam_channel::Receiver<BlMode>, m: Arc<Mutex<bool>>) {
@@ -61,8 +63,16 @@ pub mod pwm {
                             }
                             debug!("{}(): got: {:#?} {pulse}", func_name!(), 2);
                         }
-                        Ok(BlMode::Medium) => {
+                        Ok(BlMode::Mid) => {
                             // from gpio_init()
+                            pulse = PERIOD_MS / 4;
+                        }
+                        Ok(BlMode::Off) => {
+                            // SIGUSR1
+                            pulse = 0;
+                        }
+                        Ok(BlMode::On) => {
+                            // SIGUSR2
                             pulse = PERIOD_MS / 4;
                         }
                         _ => {}
