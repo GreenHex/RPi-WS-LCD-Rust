@@ -67,7 +67,7 @@ pub mod lcd {
             }
         }
 
-        fn set_adjustment(&self) -> (usize, usize) {
+        fn set_adjustment(&self) -> (u8, u8) {
             if self.memory_access_control_value() & 0x20 != 0x20 {
                 (LCD_X_CORRECTION, LCD_Y_CORRECTION)
             } else {
@@ -99,10 +99,10 @@ pub mod lcd {
             gpio_write2(self.rst_pin, Level::High).unwrap();
             gpio_sleep_200_ms();
 
-            spi_write_seq(&LCD_INIT_SEQ2);
+            spi_write_seq(&LCD_INIT_SEQ);
 
-            // spi_write_ubyte2(&CmdOrData::Cmd(0xB4)); // Column inversion
-            // spi_write_ubyte2(&CmdOrData::Data(0x07));
+            spi_write_ubyte2(&CmdOrData::Cmd(0xB4)); // Column inversion
+            spi_write_ubyte2(&CmdOrData::Data(0x07));
 
             // spi_write_seq(&LCD_GAMMA_SEQ);
 
@@ -112,6 +112,9 @@ pub mod lcd {
             self.lcd_set_window(0, 0, LCD_WIDTH, LCD_HEIGHT).unwrap();
 
             self.lcd_clear(BLACK).unwrap();
+
+            // self.img_clear(BLACK);
+            // self.img_draw_image(0, 0, IMG_WIDTH, IMG_HEIGHT * 2);
         }
 
         pub fn lcd_set_window(
@@ -130,25 +133,13 @@ pub mod lcd {
 
             let (x_adj, y_adj) = self.set_adjustment();
 
-            // spi_write_ubyte2(&CmdOrData::Cmd(PARTIAL_MODE_OFF));
+            spi_write_ubyte2(&CmdOrData::Cmd(PARTIAL_MODE_OFF));
 
             spi_write_ubyte2(&CmdOrData::Cmd(COLUMN_ADDRESS_SET));
-            // spi_write_data_array(&[c0h, c0l + x_adj, c1h, c1l & 0xFF + x_adj]);
-            spi_write_data_array(&[
-                0x00,
-                x0 as u8 & 0xFF + x_adj as u8,
-                0x00,
-                (x1 as u8 - 1) & 0xFF + x_adj as u8,
-            ]);
+            spi_write_data_array(&[c0h, c0l + x_adj, c1h, c1l & 0xFF + x_adj]);
 
             spi_write_ubyte2(&CmdOrData::Cmd(ROW_ADDRESS_SET));
-            // spi_write_data_array(&[p0h, p0l + y_adj, p1h, p1l & 0xFF + y_adj]);
-            spi_write_data_array(&[
-                0x00,
-                y0 as u8 & 0xFF + y_adj as u8,
-                0x00,
-                (y1 as u8 - 1) & 0xFF + y_adj as u8,
-            ]);
+            spi_write_data_array(&[p0h, p0l + y_adj, p1h, p1l & 0xFF + y_adj]);
 
             spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));
 
@@ -224,13 +215,16 @@ pub mod lcd {
 
         pub fn img_draw_pixel(&mut self, x: usize, y: usize, colour: UWORD) -> &Self {
             let j = y.div_ceil(2) * 2;
+            // if j >= LCD_HEIGHT {
+            //     return self;
+            // }
             self.image[j * IMG_WIDTH + x * LCD_COLOUR_DEPTH] = ((colour >> 8) & 0xFF) as u8;
             self.image[j * IMG_WIDTH + x * LCD_COLOUR_DEPTH + 1] = (colour & 0xFF) as u8;
 
             self
         }
 
-        // same as img_draw_pixel()
+        // same as img_draw_pixel(), don't know WTH is happening
         pub fn img_draw_pixel_font(&mut self, x: usize, y: usize, colour: UWORD) -> &Self {
             if y % 2 == 0 {
                 self.image[y * IMG_WIDTH + x * LCD_COLOUR_DEPTH] = ((colour >> 8) & 0xFF) as u8;
@@ -253,7 +247,7 @@ pub mod lcd {
                 return;
             }
 
-            if x > LCD_WIDTH || y > LCD_HEIGHT {
+            if x > LCD_WIDTH || y > LCD_HEIGHT * 2 {
                 error!(
                     "{}(): x value [{}] or y value [{}] is out of bounds, exiting",
                     func_name!(),

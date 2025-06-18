@@ -52,8 +52,11 @@ use crate::fonts::font48::font48::*;
 use crate::fonts::font50::font50::*;
 use rand::Rng;
 use terminate_thread::Thread;
+mod utils;
+use crate::utils::utils::*;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let exe_name = std::env::current_exe()
         .expect("Can't get the exec path")
         .file_name()
@@ -72,7 +75,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         )
         .install()
         .unwrap();
-    log::set_max_level(LevelFilter::Debug);
+    log::set_max_level(LevelFilter::Info);
 
     info!("[{exe_name}] started");
 
@@ -102,10 +105,67 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_orientation(LCD_ORIENTATION)
         .with_max_buffer_size(64);
 
-    let _ = gpio_init(&mut l, &_s2);
+    let _ = lcd_setup(&mut l, &_s2);
 
     while !term_now.load(Ordering::Relaxed) {
         // MAIN LOOP
+        l.lcd_set_window(0, 0, IMG_WIDTH, IMG_HEIGHT).unwrap();
+
+        l.img_draw_rect2(0, 0, IMG_WIDTH, 32, WHITE);
+        l.img_draw_string(
+            (IMG_WIDTH - get_time_str().len() * FONT12.width) / 2,
+            8,
+            get_time_str(),
+            &FONT12,
+            BLACK,
+            WHITE,
+        );
+
+        l.img_draw_string(4, 42, "IP Address".to_string(), &FONT8, BLUE2, BLACK);
+        l.img_draw_string(
+            (IMG_WIDTH - get_ip().len() * FONT12.width) - 4,
+            42 + 24,
+            get_ip(),
+            &FONT12,
+            WHITE,
+            BLACK,
+        );
+
+        let (_, uptime, load, temp) = get_cpu_info();
+        l.img_draw_string(4, 102, "Uptime".to_string(), &FONT8, BLUE2, BLACK);
+        l.img_draw_string(
+            (IMG_WIDTH - uptime.len() * FONT12.width) - 4,
+            102 + 24,
+            uptime,
+            &FONT12,
+            WHITE,
+            BLACK,
+        );
+
+        l.img_draw_string(4, 162, "Load".to_string(), &FONT8, BLUE2, BLACK);
+        l.img_draw_string(
+            (IMG_WIDTH - load.len() * FONT12.width) - 4,
+            162 + 24,
+            load,
+            &FONT12,
+            WHITE,
+            BLACK,
+        );
+
+        l.img_draw_rect2(1, 220, IMG_WIDTH - 2, FONT16.height * 2 + 2 + 2, ORANGE);
+        let btc = get_btc().await;
+        l.img_draw_string(
+            (IMG_WIDTH - btc.len() * FONT16.width) / 2,
+            220 + 4,
+            btc,
+            &FONT16,
+            BLACK,
+            ORANGE,
+        );
+
+        l.img_draw_image(0, 0, LCD_WIDTH, LCD_HEIGHT);
+
+        thread::sleep(Duration::from_millis(1000 * 30));
 
         'inner: for signal in signals.pending() {
             match signal {
@@ -171,34 +231,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn gpio_init(l: &mut Lcd, s: &crossbeam_channel::Sender<BlMode>) -> Result<(), Box<dyn Error>> {
+fn lcd_setup(l: &mut Lcd, s: &crossbeam_channel::Sender<BlMode>) -> Result<(), Box<dyn Error>> {
     l.lcd_init();
-    // l.lcd_set_window(0, 0, IMG_WIDTH, IMG_HEIGHT).unwrap();
     spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));
-    l.img_clear(WHITE);
 
-    // l.lcd_set_window(20, 20, LCD_WIDTH - 30, LCD_HEIGHT - 30)
-    //    .unwrap();
+    l.img_clear(BLACK);
 
-    // l.lcd_set_window(0, 0, 64, 132).unwrap();
-    l.img_draw_rect(0, 0, IMG_WIDTH, IMG_HEIGHT * 2, BLUE);
-    l.img_draw_rect(10, 20, 50, 128, GREEN);
-    l.img_draw_rect(60, 200, 20, 30, RED);
-    // l.img_draw_pixel(260 / 2, 260 / 2, BLACK);
-    l.img_draw_pixel(32, 132, WHITE);
-    l.img_draw_pixel(64, 132, WHITE);
-    l.img_draw_pixel(64, 29, WHITE);
-    l.img_draw_pixel(64, 200, WHITE);
-
-    // l.lcd_fill_rect(10, 10, 20, 30, RED).unwrap();
-    // l.lcd_fill_rect(0, 0, 64, 128, GRED).unwrap();
-
-    l.img_draw_char(20, 40, 'a', &FONT8, WHITE, BLACK);
-    l.img_draw_char(32, 100, 'A', &FONT50, BLUE, RED);
-    l.img_draw_string(10, 10, String::from("Hello"), &FONT16, RED, BLACK);
-
-    l.img_draw_string(12, 50, String::from("Hello"), &FONT8, BLUE, GREEN);
-
-    l.img_draw_image(0, 0, IMG_WIDTH, IMG_HEIGHT);
     return Ok(());
 }

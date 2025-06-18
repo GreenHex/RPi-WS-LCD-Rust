@@ -17,11 +17,11 @@ pub mod defs {
     pub const LCD_WIDTH: usize = 128;
     pub const LCD_HEIGHT: usize = 128;
 
-    pub const IMG_WIDTH: usize = 128;
-    pub const IMG_HEIGHT: usize = 128;
+    pub const IMG_WIDTH: usize = LCD_WIDTH;
+    pub const IMG_HEIGHT: usize = LCD_HEIGHT;
 
-    pub const LCD_X_CORRECTION: usize = 0;
-    pub const LCD_Y_CORRECTION: usize = 0;
+    pub const LCD_X_CORRECTION: u8 = 0;
+    pub const LCD_Y_CORRECTION: u8 = 0;
 
     pub const LCD_ORIENTATION: LcdOrientation = LcdOrientation::Rotate90;
 
@@ -58,6 +58,10 @@ pub mod defs {
     pub const BROWN: UWORD = 0xBC40;
     pub const BRRED: UWORD = 0xFC07;
     pub const GRAY: UWORD = 0x8430;
+    pub const TANGARINE: UWORD = 0xFCCC;
+    pub const ORANGE: UWORD = 0xFE00;
+    pub const RED2: UWORD = 0xF841;
+    pub const BLUE2: UWORD = 0x0E3F;
 
     #[derive(Debug)]
     pub enum LcdOrientation {

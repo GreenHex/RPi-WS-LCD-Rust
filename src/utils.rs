@@ -7,6 +7,9 @@
 pub mod utils {
     use chrono::Local;
     use local_ip_address::local_ip;
+    use log::{LevelFilter, debug, error, info, warn};
+    use numfmt::{Formatter, Precision};
+    use rusty_money::{Money, iso};
     use systemstat::{Platform, System};
 
     pub const _J_TIME: &str = "TIME";
@@ -76,5 +79,52 @@ pub mod utils {
 
     pub fn get_time_str() -> String {
         return format!("{}", Local::now().format("%H:%M %d-%b-%Y"));
+    }
+
+    pub async fn get_btc() -> String {
+        let mut ath = 0;
+        let btc = match reqwest::get("https://cryptoprices.cc/BTC").await {
+            Ok(resp) => {
+                ath = match reqwest::get("https://cryptoprices.cc/BTC/ATH").await {
+                    Ok(resp) => resp
+                        .text()
+                        .await
+                        .unwrap()
+                        .replace("\n", "")
+                        .parse::<i64>()
+                        .unwrap(),
+                    Err(e) => {
+                        error!("Error: {:?}", e);
+                        0
+                    }
+                };
+                resp.text()
+                    .await
+                    .unwrap()
+                    .replace("\n", "")
+                    .parse::<i64>()
+                    .unwrap()
+            }
+            Err(e) => {
+                error!("Error: {:?}", e);
+                0
+            }
+        };
+
+        info!(
+            "{} {} {}",
+            Money::from_str(ath.to_string().as_str(), iso::USD).unwrap(),
+            Money::from_str(btc.to_string().as_str(), iso::USD).unwrap(),
+            Money::from_str((btc - ath).to_string().as_str(), iso::USD).unwrap()
+        );
+
+        let mut f = Formatter::new() // start with blank representation
+            .separator(',')
+            .unwrap()
+            .prefix("$")
+            .unwrap()
+            .precision(Precision::Decimals(0));
+
+        return f.fmt2(btc).to_string();
     }
 }
