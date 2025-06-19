@@ -7,6 +7,7 @@
 
 pub mod usb {
     use crate::defs::defs::*;
+    use crate::stats::stats::*;
     use ascii::AsAsciiStr;
     use log::{LevelFilter, debug, error, info, warn};
     use serialport::*;
@@ -17,9 +18,6 @@ pub mod usb {
     use std::sync::Mutex;
     use std::thread;
     use std::time::Duration;
-
-    include!("stats.rs");
-    use stats::*;
 
     const VENDOR_ID: u16 = 0x2E8A;
     const PRODUCT_ID: u16 = 0x000A;

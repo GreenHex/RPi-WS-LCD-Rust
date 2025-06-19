@@ -17,7 +17,6 @@ pub mod pwm {
 
     use crate::defs::defs::*;
     use crate::gpio::gpio::*;
-    use crate::http::http::stats::utils::get_cpu_info;
 
     const PERIOD_MS: u64 = 8;
 

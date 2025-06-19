@@ -6,9 +6,11 @@
  */
 
 pub mod defs {
+    pub const SCREEN_UPDATE_INTERVAL_SECS: u64 = 5;
 
     pub const HTTP_HOST: &str = "0.0.0.0";
     pub const HTTP_PORT: &str = "8080";
+    pub const HTTP_REQ_INTERVAL_SECS: u64 = 10 * 60;
 
     pub type UBYTE = u8;
     pub type UWORD = u16;
@@ -77,6 +79,15 @@ pub mod defs {
         pub height: usize,
     }
 
+    pub(crate) struct CryptoResult {
+        pub btc_cmp: u64,
+        pub btc_ath: u64,
+        pub btc_ath_cmp_diff: i64,
+        pub btc_cmp_str: String,
+        pub btc_ath_str: String,
+        pub btc_ath_cmp_diff_str: String,
+    }
+
     #[macro_export]
     macro_rules! func_name {
         () => {
@@ -108,4 +119,25 @@ pub mod defs {
         let (h, l) = u16_to_bytes(color);
         core::array::from_fn(|i| if i % 2 == 0 { h } else { l })
     }
+
+    // For JSON string output...
+    pub const _J_TIME: &str = "TIME";
+    pub const _J_IP_ADDRESS: &str = "IP_ADDRESS";
+    pub const _J_UPTIME: &str = "UPTIME";
+    pub const _J_LOAD: &str = "LOAD";
+    pub const _J_CPU_TEMP: &str = "CPU_TEMP";
+    pub const _J_CHARGE: &str = "CHARGE";
+    pub const _J_UPS_TIME: &str = "UPS_TIME";
+    pub const _J_ON_BATTERY: &str = "ON_BATTERY";
+    pub const _J_BATTERY_PERCENT: &str = "BATTERY_PERCENT";
+    pub const _J_NET_STATUS: &str = "NET_STATUS";
+    pub const _J_TIME_REMAINING_OR_TO_FULL: &str = "TIME_REMAINING_OR_TO_FULL";
+    pub const _J_PROCESS_NAME: &str = "PROCESS_NAME";
+    pub const _J_PROCESS_STATUS: &str = "PROCESS_STATUS";
+    pub const _J_BTC_CMP: &str = "BTC_CMP";
+    pub const _J_BTC_ATH: &str = "BTC_ATH";
+    pub const _J_BTC_CMP_ATH_DIFF: &str = "BTC_CMP_ATH_DIFF";
+    pub const _J_BTC_CMP_STR: &str = "BTC_CMP_STR";
+    pub const _J_BTC_ATH_STR: &str = "BTC_ATH_STR";
+    pub const _J_BTC_CMP_ATH_DIFF_STR: &str = "BTC_CMP_ATH_DIFF_STR";
 }

@@ -6,7 +6,8 @@
  */
 
 pub mod stats {
-    use crate::defs::*;
+    use crate::defs::defs::CryptoResult;
+    use crate::defs::defs::*;
     use json;
     use log::{LevelFilter, debug, error, info, warn};
     use std::error::Error;
@@ -34,7 +35,14 @@ pub mod stats {
         json_obj[_J_PROCESS_NAME] = "firefox".into();
         json_obj[_J_PROCESS_STATUS] = 0.into();
 
-        debug!("{}(): {}", defs::func_name!(), json_obj.dump());
+        json_obj[_J_BTC_CMP] = 0.into();
+        json_obj[_J_BTC_ATH] = 0.into();
+        json_obj[_J_BTC_CMP_ATH_DIFF] = 0.into();
+        json_obj[_J_BTC_CMP_STR] = 0.into();
+        json_obj[_J_BTC_ATH_STR] = 0.into();
+        json_obj[_J_BTC_CMP_ATH_DIFF_STR] = 0.into();
+
+        debug!("{}(): {}", func_name!(), json_obj.dump());
 
         return json_obj;
     }

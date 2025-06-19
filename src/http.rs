@@ -7,13 +7,11 @@
 
 pub mod http {
     use crate::defs::defs::*;
+    use crate::stats::stats::*;
     use log::{LevelFilter, debug, error, info, warn};
     use std::{ascii::*, str::FromStr};
     use tiny_http::*;
     use tiny_http::{Response, Server};
-
-    include!("stats.rs");
-    use stats::*;
 
     pub fn http_server() {
         let server_str = format!("{}:{}", HTTP_HOST, HTTP_PORT);

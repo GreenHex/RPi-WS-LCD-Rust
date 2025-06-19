@@ -18,13 +18,13 @@ pub mod lcd {
     const DELAY: u64 = 200;
     const IMG_ARR_SIZE: usize = IMG_WIDTH * IMG_HEIGHT * LCD_COLOUR_DEPTH;
 
-    trait SPI {
-        fn get_spi() -> rppal::spi::Spi;
-        fn spi_write_ubyte(data: UBYTE, is_cmd: bool);
-        fn spi_write_data_uword(data: UWORD);
-        fn spi_write_seq(data: &[CmdOrData]);
-        fn spi_write_data_array(data: &[UBYTE]);
-    }
+    // trait SPI {
+    //     fn get_spi() -> rppal::spi::Spi;
+    //     fn spi_write_ubyte(data: UBYTE, is_cmd: bool);
+    //     fn spi_write_data_uword(data: UWORD);
+    //     fn spi_write_seq(data: &[CmdOrData]);
+    //     fn spi_write_data_array(data: &[UBYTE]);
+    // }
     pub struct Lcd {
         cs_pin: UBYTE,
         dc_pin: UBYTE,  // Data / Command - 0=WriteCommand, 1=WriteData
@@ -281,20 +281,20 @@ pub mod lcd {
 
         pub fn img_draw_string<const N: usize>(
             &mut self,
-            x: usize,
-            y: usize,
-            str: String,
+            x: &usize,
+            y: &usize,
+            str: &String,
             font: &FontTable<N>,
             colour_fg: UWORD,
             colour_bg: UWORD,
         ) {
             let mut iter = str.chars();
-            let mut x_pos = x;
+            let mut x_pos = *x;
             loop {
                 let ch = iter.next();
                 match ch {
                     Some(c) => {
-                        self.img_draw_char(x_pos, y, c, font, colour_fg, colour_bg);
+                        self.img_draw_char(x_pos, *y, c, font, colour_fg, colour_bg);
                         x_pos += font.width;
                     }
                     None => {

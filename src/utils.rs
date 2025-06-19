@@ -8,23 +8,7 @@ pub mod utils {
     use chrono::Local;
     use local_ip_address::local_ip;
     use log::{LevelFilter, debug, error, info, warn};
-    use numfmt::{Formatter, Precision};
-    use rusty_money::{Money, iso};
     use systemstat::{Platform, System};
-
-    pub const _J_TIME: &str = "TIME";
-    pub const _J_IP_ADDRESS: &str = "IP_ADDRESS";
-    pub const _J_UPTIME: &str = "UPTIME";
-    pub const _J_LOAD: &str = "LOAD";
-    pub const _J_CPU_TEMP: &str = "CPU_TEMP";
-    pub const _J_CHARGE: &str = "CHARGE";
-    pub const _J_UPS_TIME: &str = "UPS_TIME";
-    pub const _J_ON_BATTERY: &str = "ON_BATTERY";
-    pub const _J_BATTERY_PERCENT: &str = "BATTERY_PERCENT";
-    pub const _J_NET_STATUS: &str = "NET_STATUS";
-    pub const _J_TIME_REMAINING_OR_TO_FULL: &str = "TIME_REMAINING_OR_TO_FULL";
-    pub const _J_PROCESS_NAME: &str = "PROCESS_NAME";
-    pub const _J_PROCESS_STATUS: &str = "PROCESS_STATUS";
 
     pub fn get_ip() -> String {
         return String::from(local_ip().unwrap().to_string());
@@ -62,7 +46,7 @@ pub mod utils {
 
         match sys.cpu_temp() {
             Ok(cpu_temp) => {
-                cpu_temperature = String::from(format!("{:.2} C", cpu_temp)); // "deg" symbol => \u{00B0}
+                cpu_temperature = String::from(format!("{:.2}\"C", cpu_temp)); // "deg" symbol => \u{00B0}
             }
             Err(e) => {
                 cpu_temperature = String::from(e.to_string());
@@ -79,52 +63,5 @@ pub mod utils {
 
     pub fn get_time_str() -> String {
         return format!("{}", Local::now().format("%H:%M %d-%b-%Y"));
-    }
-
-    pub async fn get_btc() -> String {
-        let mut ath = 0;
-        let btc = match reqwest::get("https://cryptoprices.cc/BTC").await {
-            Ok(resp) => {
-                ath = match reqwest::get("https://cryptoprices.cc/BTC/ATH").await {
-                    Ok(resp) => resp
-                        .text()
-                        .await
-                        .unwrap()
-                        .replace("\n", "")
-                        .parse::<i64>()
-                        .unwrap(),
-                    Err(e) => {
-                        error!("Error: {:?}", e);
-                        0
-                    }
-                };
-                resp.text()
-                    .await
-                    .unwrap()
-                    .replace("\n", "")
-                    .parse::<i64>()
-                    .unwrap()
-            }
-            Err(e) => {
-                error!("Error: {:?}", e);
-                0
-            }
-        };
-
-        info!(
-            "{} {} {}",
-            Money::from_str(ath.to_string().as_str(), iso::USD).unwrap(),
-            Money::from_str(btc.to_string().as_str(), iso::USD).unwrap(),
-            Money::from_str((btc - ath).to_string().as_str(), iso::USD).unwrap()
-        );
-
-        let mut f = Formatter::new() // start with blank representation
-            .separator(',')
-            .unwrap()
-            .prefix("$")
-            .unwrap()
-            .precision(Precision::Decimals(0));
-
-        return f.fmt2(btc).to_string();
     }
 }
