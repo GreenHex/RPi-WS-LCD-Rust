@@ -1,7 +1,5 @@
 ### Headless Raspberry Pi Waveshare 1.44" LCD HAT Status Display in [Rust](https://www.rust-lang.org/)
 
-__:construction: WORK IN PROGRESS :construction: INCOMPLETE :construction:__
-
 Meant for headless Raspberry Pi's with any of the following displays:
 
 1) Raspberry Pi with Waveshare 1.44" LCD HAT (onboard display)[^*]

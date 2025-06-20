@@ -10,7 +10,14 @@ pub mod defs {
 
     pub const HTTP_HOST: &str = "0.0.0.0";
     pub const HTTP_PORT: &str = "8080";
-    pub const HTTP_REQ_INTERVAL_SECS: u64 = 10 * 60;
+
+    pub const HTTP_BTC_CMP_URL: &str = "https://cryptoprices.cc/BTC";
+    pub const HTTP_BTC_ATH_URL: &str = "https://cryptoprices.cc/BTC/ATH";
+    pub const HTTP_CRYPTO_REQ_INTERVAL_SECS: u64 = 5;
+
+    pub const USB_DEV_VENDOR_ID: u16 = 0x2E8A;
+    pub const USB_DEV_PRODUCT_ID: u16 = 0x000A;
+    pub const USB_DEV_SERIAL_NUM: &str = "E6616407E361442F";
 
     pub type UBYTE = u8;
     pub type UWORD = u16;
@@ -79,7 +86,8 @@ pub mod defs {
         pub height: usize,
     }
 
-    pub(crate) struct CryptoResult {
+    #[derive(Clone)]
+    pub struct CryptoResult {
         pub btc_cmp: u64,
         pub btc_ath: u64,
         pub btc_ath_cmp_diff: i64,

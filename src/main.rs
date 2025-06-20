@@ -99,16 +99,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let exit_usb_thd = exit_flag.clone();
     let exit_crypto_thd = exit_flag.clone();
 
-    let (s1, r1) = unbounded::<BlMode>();
-    let _s2 = s1.clone();
+    let (s1, r1) = unbounded::<BlMode>(); // keys_check(), bl_pwm()
+    let _s2 = s1.clone(); // forward signals to bl_pwm()
 
-    let (c_s1, r_s1) = unbounded::<CryptoResult>();
+    let (c_s1, r_s1) = unbounded::<CryptoResult>(); // crypto_thd()
+    let crypto_result = Arc::new(Mutex::new(CryptoResult::new_empty())); // crypto_thd()
+    let crypto_result1 = crypto_result.clone(); // http_server()
+    let crypto_result2 = crypto_result.clone(); // http_server()
 
     let key_chk_thread: thread::JoinHandle<()> = thread::spawn(|| keys_check(s1, exit_flag_kchk));
     let pwm_thread: thread::JoinHandle<()> = thread::spawn(|| bl_pwm(r1, exit_flag_pwm));
-    let usb_thread: thread::JoinHandle<()> = thread::spawn(|| usb_thd(exit_usb_thd));
-    let http_server_thread = Thread::spawn(|| http_server());
-    // let crypto_thread: thread::JoinHandle<()> = thread::spawn(|| crypto_thd(c_s1, exit_crypto_thd));
+    let usb_thread: thread::JoinHandle<()> =
+        thread::spawn(|| usb_thd(exit_usb_thd, crypto_result2));
+    let http_server_thread = Thread::spawn(|| http_server(crypto_result1));
 
     let rt = Builder::new_multi_thread()
         .enable_time()
@@ -116,7 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .worker_threads(1)
         .build()
         .unwrap();
-    let crypto_thread = rt.spawn(async { crypto_thd(c_s1, exit_crypto_thd).await });
+    let crypto_thread = rt.spawn(async { crypto_thd(c_s1, exit_crypto_thd, crypto_result).await });
 
     let mut l = Lcd::new(LCD_CS, LCD_DC, LCD_RST, LCD_BL)
         .with_orientation(LCD_ORIENTATION)
@@ -213,7 +216,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         l.img_draw_rect2(1, 218, IMG_WIDTH - 2, FONT16.height * 2 + 2 + 2 + 2, ORANGE);
 
         match r_s1.try_recv() {
-            Ok(retval) => btc = retval.btc_cmp_str,
+            Ok(crypto_result) => {
+                btc = crypto_result.btc_cmp_str.clone();
+                crypto_result.print();
+            }
             _ => {}
         };
 

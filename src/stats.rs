@@ -6,18 +6,22 @@
  */
 
 pub mod stats {
-    use crate::defs::defs::CryptoResult;
     use crate::defs::defs::*;
+    use crate::utils::utils::*;
     use json;
     use log::{LevelFilter, debug, error, info, warn};
+    use numfmt::{Formatter, Precision};
+    use rusty_money::crypto;
+    use rusty_money::{Money, iso};
     use std::error::Error;
     use std::sync::Arc;
     use std::sync::Mutex;
 
-    include!("utils.rs");
-    use utils::*;
+    pub fn get_json_obj(crypto_result: Arc<Mutex<CryptoResult>>) -> json::JsonValue {
+        let c_r_p = crypto_result.lock().unwrap();
+        let c_r: CryptoResult = c_r_p.clone();
+        drop(c_r_p);
 
-    pub fn get_json_obj() -> json::JsonValue {
         let mut json_obj = json::JsonValue::new_object();
 
         json_obj[_J_TIME] = get_time_str().into();
@@ -35,19 +39,19 @@ pub mod stats {
         json_obj[_J_PROCESS_NAME] = "firefox".into();
         json_obj[_J_PROCESS_STATUS] = 0.into();
 
-        json_obj[_J_BTC_CMP] = 0.into();
-        json_obj[_J_BTC_ATH] = 0.into();
-        json_obj[_J_BTC_CMP_ATH_DIFF] = 0.into();
-        json_obj[_J_BTC_CMP_STR] = 0.into();
-        json_obj[_J_BTC_ATH_STR] = 0.into();
-        json_obj[_J_BTC_CMP_ATH_DIFF_STR] = 0.into();
+        json_obj[_J_BTC_CMP] = c_r.btc_cmp.into();
+        json_obj[_J_BTC_ATH] = c_r.btc_ath.into();
+        json_obj[_J_BTC_CMP_ATH_DIFF] = c_r.btc_ath_cmp_diff.into();
+        json_obj[_J_BTC_CMP_STR] = c_r.btc_cmp_str.into();
+        json_obj[_J_BTC_ATH_STR] = c_r.btc_ath_str.into();
+        json_obj[_J_BTC_CMP_ATH_DIFF_STR] = c_r.btc_ath_cmp_diff_str.into();
 
         debug!("{}(): {}", func_name!(), json_obj.dump());
 
         return json_obj;
     }
 
-    pub fn get_json_str() -> String {
-        return get_json_obj().dump();
+    pub fn get_json_str(crypto_result: Arc<Mutex<CryptoResult>>) -> String {
+        return get_json_obj(crypto_result).dump();
     }
 }

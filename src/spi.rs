@@ -23,14 +23,6 @@ pub mod spi {
     pub const SPI_FREQ_HZ: u32 = 100_000_000; // MAX: 250 MHz
     pub const SPI_MODE: Mode = Mode::Mode0;
 
-    // pub trait SPI {
-    //     fn get_spi() -> rppal::spi::Spi;
-    //     fn spi_write_ubyte(data: UBYTE, is_cmd: bool);
-    //     fn spi_write_data_uword(data: UWORD);
-    //     fn spi_write_seq(data: &[InitSeq]);
-    //     fn spi_write_data_array(data: &[UBYTE]);
-    // }
-
     // macro_rules! get_spi {
     //     () => {
     //         Spi::new(SPI_BUS, SPI_SLAVE_SELECT, SPI_FREQ_HZ, SPI_MODE).expect("Error: Could not open SPI port")

@@ -19,10 +19,6 @@ pub mod usb {
     use std::thread;
     use std::time::Duration;
 
-    const VENDOR_ID: u16 = 0x2E8A;
-    const PRODUCT_ID: u16 = 0x000A;
-    const SERIAL_NUM: &str = "E6616407E361442F";
-
     const _CMD_READY: &str = ":READY:";
     const _CMD_OK: &str = ":OK:";
     const _CMD_FINISH: &str = ":FINISH:";
@@ -34,7 +30,7 @@ pub mod usb {
 
     const SPI_READ_BUFFER_SIZE: usize = 100_000;
 
-    pub fn usb_thd(m: Arc<Mutex<bool>>) {
+    pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
         'outer: loop {
             match available_ports() {
                 Ok(ports) => {
@@ -100,7 +96,10 @@ pub mod usb {
                                 break 'outer;
                             }
 
-                            match send_usb(port.try_clone().unwrap(), get_json_str().as_str()) {
+                            match send_usb(
+                                port.try_clone().unwrap(),
+                                get_json_str(crypto_result.clone()).as_str(),
+                            ) {
                                 Ok(_) => {}
                                 Err(e) => {
                                     break 'inner;
@@ -236,8 +235,8 @@ pub mod usb {
                 ..
             } = info
             {
-                if info.vid == VENDOR_ID && info.pid == PRODUCT_ID {
-                    if info.serial_number == Some(String::from(SERIAL_NUM)) {
+                if info.vid == USB_DEV_VENDOR_ID && info.pid == USB_DEV_PRODUCT_ID {
+                    if info.serial_number == Some(String::from(USB_DEV_SERIAL_NUM)) {
                         true
                     } else {
                         false

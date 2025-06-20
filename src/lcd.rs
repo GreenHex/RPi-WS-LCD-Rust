@@ -387,6 +387,7 @@ pub mod lcd {
     pub const POWER_ON_SEQ_CONTROL: u8 = 0xED;
     pub const ENABLE_3G: u8 = 0xF2;
     pub const PUMP_RATIO_CONTROL: u8 = 0xF7;
+
     pub enum CmdOrData {
         Cmd(UBYTE),
         Data(UBYTE),

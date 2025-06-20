@@ -5,11 +5,14 @@
  *
  */
 pub mod crypto {
+    use crate::defs::defs::CryptoResult;
     use crate::defs::defs::*;
     use chrono::Local;
+    use libc::CR0;
     use local_ip_address::local_ip;
     use log::{LevelFilter, debug, error, info, warn};
     use numfmt::{Formatter, Precision};
+    use rusty_money::crypto;
     use rusty_money::{Money, iso};
     use std::sync::Arc;
     use std::sync::Mutex;
@@ -18,22 +21,106 @@ pub mod crypto {
     use std::{thread, u8};
     use systemstat::{Platform, System};
 
-    pub async fn crypto_thd(s: crossbeam_channel::Sender<CryptoResult>, m: Arc<Mutex<bool>>) {
-        let mut crypto_result: CryptoResult = CryptoResult {
-            btc_cmp: 0,
-            btc_ath: 0,
-            btc_ath_cmp_diff: 0,
-            btc_cmp_str: String::from("waiting..."),
-            btc_ath_str: String::from("waiting..."),
-            btc_ath_cmp_diff_str: String::from("waiting..."),
-        };
+    impl CryptoResult {
+        pub fn new(
+            btc_cmp: u64,
+            btc_ath: u64,
+            btc_ath_cmp_diff: i64,
+            btc_cmp_str: String,
+            btc_ath_str: String,
+            btc_ath_cmp_diff_str: String,
+        ) -> Self {
+            Self {
+                btc_cmp: btc_cmp,
+                btc_ath: btc_ath,
+                btc_ath_cmp_diff: btc_ath_cmp_diff,
+                btc_cmp_str: btc_cmp_str,
+                btc_ath_str: btc_ath_str,
+                btc_ath_cmp_diff_str: btc_ath_cmp_diff_str,
+            }
+        }
+
+        pub fn new_empty() -> Self {
+            Self {
+                btc_cmp: 0,
+                btc_ath: 0,
+                btc_ath_cmp_diff: 0,
+                btc_cmp_str: String::from("waiting..."),
+                btc_ath_str: String::from("waiting..."),
+                btc_ath_cmp_diff_str: String::from("waiting..."),
+            }
+        }
+
+        pub fn update(
+            &mut self,
+            btc_cmp: u64,
+            btc_ath: u64,
+            btc_ath_cmp_diff: i64,
+            btc_cmp_str: String,
+            btc_ath_str: String,
+            btc_ath_cmp_diff_str: String,
+        ) {
+            self.btc_cmp = btc_cmp;
+            self.btc_ath = btc_ath;
+            self.btc_ath_cmp_diff = btc_ath_cmp_diff;
+            self.btc_cmp_str = btc_cmp_str;
+            self.btc_ath_str = btc_ath_str;
+            self.btc_ath_cmp_diff_str = btc_ath_cmp_diff_str;
+        }
+
+        pub fn copy(&self, other: &mut Self) {
+            other.btc_cmp = self.btc_cmp;
+            other.btc_ath = self.btc_ath;
+            other.btc_ath_cmp_diff = self.btc_ath_cmp_diff;
+            other.btc_cmp_str = self.btc_cmp_str.clone();
+            other.btc_ath_str = self.btc_ath_str.clone();
+            other.btc_ath_cmp_diff_str = self.btc_ath_cmp_diff_str.clone();
+        }
+
+        pub fn get(self) -> (u64, u64, i64, String, String, String) {
+            (
+                self.btc_cmp,
+                self.btc_ath,
+                self.btc_ath_cmp_diff,
+                self.btc_cmp_str,
+                self.btc_ath_str,
+                self.btc_ath_cmp_diff_str,
+            )
+        }
+
+        pub fn print(self) {
+            info!(
+                "{}(): {} {} {}",
+                func_name!(),
+                Money::from_str(self.btc_ath.to_string().as_str(), iso::USD).unwrap(),
+                Money::from_str(self.btc_cmp.to_string().as_str(), iso::USD).unwrap(),
+                Money::from_str(
+                    (self.btc_cmp as i64 - self.btc_ath as i64)
+                        .to_string()
+                        .as_str(),
+                    iso::USD
+                )
+                .unwrap()
+            );
+        }
+    }
+
+    pub async fn crypto_thd(
+        s: crossbeam_channel::Sender<CryptoResult>,
+        m: Arc<Mutex<bool>>,
+        c_r: Arc<Mutex<CryptoResult>>,
+    ) {
+        let mut crypto_result: CryptoResult = CryptoResult::new_empty();
 
         'outer: loop {
             crypto_result = get_btc().await;
 
             if crypto_result.btc_cmp > 0 {
-                let a = get_btc().await;
-                s.send(a).unwrap();
+                s.send(crypto_result.clone()).unwrap();
+
+                let mut c_r_p = c_r.lock().unwrap();
+                *c_r_p = crypto_result;
+                drop(c_r_p);
             }
 
             // NOT REQUIRED...
@@ -43,7 +130,7 @@ pub mod crypto {
                 break 'outer;
             }
             drop(_exit);
-            thread::sleep(Duration::from_secs(HTTP_REQ_INTERVAL_SECS));
+            thread::sleep(Duration::from_secs(HTTP_CRYPTO_REQ_INTERVAL_SECS));
         }
         drop(s);
     }
@@ -52,9 +139,9 @@ pub mod crypto {
         let mut btc_ath = 0;
         let mut btc_cmp = 0;
 
-        btc_cmp = match reqwest::get("https://cryptoprices.cc/BTC").await {
+        btc_cmp = match reqwest::get(HTTP_BTC_CMP_URL).await {
             Ok(resp) => {
-                btc_ath = match reqwest::get("https://cryptoprices.cc/BTC/ATH").await {
+                btc_ath = match reqwest::get(HTTP_BTC_ATH_URL).await {
                     Ok(resp) => resp
                         .text()
                         .await
@@ -80,8 +167,9 @@ pub mod crypto {
             }
         };
 
-        info!(
-            "{} {} {}",
+        debug!(
+            "{}(): {} {} {}",
+            func_name!(),
             Money::from_str(btc_ath.to_string().as_str(), iso::USD).unwrap(),
             Money::from_str(btc_cmp.to_string().as_str(), iso::USD).unwrap(),
             Money::from_str(

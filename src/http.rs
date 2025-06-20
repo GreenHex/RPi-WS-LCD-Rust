@@ -9,11 +9,13 @@ pub mod http {
     use crate::defs::defs::*;
     use crate::stats::stats::*;
     use log::{LevelFilter, debug, error, info, warn};
+    use std::sync::Arc;
+    use std::sync::Mutex;
     use std::{ascii::*, str::FromStr};
     use tiny_http::*;
     use tiny_http::{Response, Server};
 
-    pub fn http_server() {
+    pub fn http_server(crypto_result: Arc<Mutex<CryptoResult>>) {
         let server_str = format!("{}:{}", HTTP_HOST, HTTP_PORT);
 
         let server = Server::http(&server_str).expect("Failed to start HTTP server");
@@ -32,7 +34,10 @@ pub mod http {
                 value: ascii::AsciiString::from_ascii("application/json; charset=utf-8").unwrap(),
             };
             request
-                .respond(Response::from_string(get_json_obj().to_string()).with_header(header))
+                .respond(
+                    Response::from_string(get_json_obj(crypto_result.clone()).to_string())
+                        .with_header(header),
+                )
                 .unwrap();
         }
     }
