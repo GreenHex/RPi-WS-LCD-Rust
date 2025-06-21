@@ -108,18 +108,18 @@ pub mod crypto {
     pub async fn crypto_thd(
         s: crossbeam_channel::Sender<CryptoResult>,
         m: Arc<Mutex<bool>>,
-        c_r: Arc<Mutex<CryptoResult>>,
+        crypto_result: Arc<Mutex<CryptoResult>>,
     ) {
-        let mut crypto_result: CryptoResult = CryptoResult::new_empty();
+        let mut c_r: CryptoResult = CryptoResult::new_empty();
 
         'outer: loop {
-            crypto_result = get_btc().await;
+            c_r = get_btc().await;
 
-            if crypto_result.btc_cmp > 0 {
-                s.send(crypto_result.clone()).unwrap();
+            if c_r.btc_cmp > 0 {
+                s.send(c_r.clone()).unwrap();
 
-                let mut c_r_p = c_r.lock().unwrap();
-                *c_r_p = crypto_result;
+                let mut c_r_p = crypto_result.lock().unwrap();
+                *c_r_p = c_r;
                 drop(c_r_p);
             }
 
@@ -133,6 +133,7 @@ pub mod crypto {
             thread::sleep(Duration::from_secs(HTTP_CRYPTO_REQ_INTERVAL_SECS));
         }
         drop(s);
+        drop(crypto_result);
     }
 
     pub async fn get_btc() -> CryptoResult {

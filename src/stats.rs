@@ -48,6 +48,7 @@ pub mod stats {
 
         debug!("{}(): {}", func_name!(), json_obj.dump());
 
+        drop(crypto_result);
         return json_obj;
     }
 

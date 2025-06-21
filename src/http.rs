@@ -30,15 +30,30 @@ pub mod http {
                 request.headers()
             );
             let header = tiny_http::Header {
-                field: tiny_http::HeaderField::from_str("Content-type").unwrap(),
-                value: ascii::AsciiString::from_ascii("application/json; charset=utf-8").unwrap(),
+                field: tiny_http::HeaderField::from_str("Content-type")
+                    .expect("Failed to set header field"),
+                value: ascii::AsciiString::from_ascii("application/json; charset=utf-8")
+                    .expect("Failed to set header value"),
             };
             request
                 .respond(
                     Response::from_string(get_json_obj(crypto_result.clone()).to_string())
                         .with_header(header),
                 )
-                .unwrap();
+                .expect("Failed sending request");
         }
+        drop(crypto_result);
+    }
+
+    fn set_thread_panic_hook() {
+        use std::{
+            panic::{set_hook, take_hook},
+            process::exit,
+        };
+        let orig_hook = take_hook();
+        set_hook(Box::new(move |panic_info| {
+            orig_hook(panic_info);
+            exit(1);
+        }));
     }
 }

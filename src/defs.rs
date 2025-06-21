@@ -13,7 +13,7 @@ pub mod defs {
 
     pub const HTTP_BTC_CMP_URL: &str = "https://cryptoprices.cc/BTC";
     pub const HTTP_BTC_ATH_URL: &str = "https://cryptoprices.cc/BTC/ATH";
-    pub const HTTP_CRYPTO_REQ_INTERVAL_SECS: u64 = 5;
+    pub const HTTP_CRYPTO_REQ_INTERVAL_SECS: u64 = 60 * 30;
 
     pub const USB_DEV_VENDOR_ID: u16 = 0x2E8A;
     pub const USB_DEV_PRODUCT_ID: u16 = 0x000A;

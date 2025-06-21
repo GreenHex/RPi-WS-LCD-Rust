@@ -86,7 +86,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let term_now = Arc::new(AtomicBool::new(false));
     for sig in TERM_SIGNALS {
-        flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
+        // flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
         flag::register(*sig, Arc::clone(&term_now))?;
     }
 
@@ -105,13 +105,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let (c_s1, r_s1) = unbounded::<CryptoResult>(); // crypto_thd()
     let crypto_result = Arc::new(Mutex::new(CryptoResult::new_empty())); // crypto_thd()
     let crypto_result1 = crypto_result.clone(); // http_server()
-    let crypto_result2 = crypto_result.clone(); // http_server()
+    let crypto_result2 = crypto_result.clone(); // usb_thd()
 
     let key_chk_thread: thread::JoinHandle<()> = thread::spawn(|| keys_check(s1, exit_flag_kchk));
     let pwm_thread: thread::JoinHandle<()> = thread::spawn(|| bl_pwm(r1, exit_flag_pwm));
     let usb_thread: thread::JoinHandle<()> =
         thread::spawn(|| usb_thd(exit_usb_thd, crypto_result2));
-    let http_server_thread = Thread::spawn(|| http_server(crypto_result1));
+    // let http_server_thread = Thread::spawn(|| http_server(crypto_result1));
 
     let rt = Builder::new_multi_thread()
         .enable_time()
@@ -119,6 +119,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .worker_threads(1)
         .build()
         .unwrap();
+    let http_server_thread = rt.spawn(async { http_server(crypto_result1) });
     let crypto_thread = rt.spawn(async { crypto_thd(c_s1, exit_crypto_thd, crypto_result).await });
 
     let mut l = Lcd::new(LCD_CS, LCD_DC, LCD_RST, LCD_BL)
@@ -267,6 +268,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     l.lcd_clear(BLACK).unwrap();
 
+    crypto_thread.abort_handle().abort();
+    info!("crypto_thd() ended");
+    http_server_thread.abort_handle().abort();
+    info!("http_server() thread ended");
+
+    rt.shutdown_background();
+    info!("tokio rt shutdown");
+
     match usb_thread.join() {
         Ok(result) => {
             info!("usb_thd() thread ended");
@@ -293,11 +302,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             error!("Error stopping keys_check() thread");
         }
     }
-
-    crypto_thread.abort();
-    info!("crypto_thd() (probably) ended");
-    http_server_thread.terminate(); //does this even work?
-    info!("http_server() thread (probably) ended");
 
     info!("[{exe_name}] exited");
 

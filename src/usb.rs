@@ -161,6 +161,7 @@ pub mod usb {
 
             if *_exit {
                 info!("Exiting {}()", func_name!());
+                drop(crypto_result);
                 break;
             }
         }
