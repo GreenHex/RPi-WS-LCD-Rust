@@ -6,8 +6,15 @@
  */
 
 pub mod keys {
-    use log::{LevelFilter, error, info, warn};
+    use crossbeam_channel::*;
+    use log::{LevelFilter, debug, error, info, warn};
     use rppal::gpio::{Gpio, Level};
+    use signal_hook::consts::TERM_SIGNALS;
+    use signal_hook::consts::*;
+    use signal_hook::flag;
+    use signal_hook::iterator::Signals;
+    use signal_hook::low_level::exit;
+    use signal_hook::*;
     use std::error::Error;
     use std::sync::Arc;
     use std::sync::Mutex;
@@ -36,5 +43,38 @@ pub mod keys {
             thread::sleep(Duration::from_millis(500));
         }
         return;
+    }
+
+    pub fn handle_usrsigs<'wait>(
+        s: Sender<BlMode>,
+        sigusr_signals: &'wait mut signal_hook::iterator::SignalsInfo,
+        m: Arc<Mutex<bool>>,
+    ) {
+        'outer: loop {
+            'inner: for signal in sigusr_signals.pending() {
+                match signal {
+                    SIGUSR1 => {
+                        debug!("{}(): Recd SIGUSR1", func_name!());
+                        s.send(BlMode::Off).unwrap();
+                        break 'inner;
+                    }
+                    SIGUSR2 => {
+                        debug!("{}(): Recd SIGUSR2", func_name!());
+                        s.send(BlMode::On).unwrap();
+                        break 'inner;
+                    }
+                    _ => {
+                        break 'inner;
+                    }
+                }
+            }
+            let _exit = m.lock().unwrap();
+            if *_exit {
+                info!("Exiting {}()", func_name!());
+                break 'outer;
+            }
+            drop(_exit);
+        }
+        drop(s);
     }
 }

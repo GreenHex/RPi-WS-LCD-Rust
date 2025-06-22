@@ -86,18 +86,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let term_now = Arc::new(AtomicBool::new(false));
     for sig in TERM_SIGNALS {
-        // flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
+        flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
         flag::register(*sig, Arc::clone(&term_now))?;
     }
 
-    let mut signals = Signals::new(&[SIGUSR1, SIGUSR2])?;
-    let sigusr_handle = signals.handle();
+    let mut sigusr_signals = Signals::new(&[SIGUSR1, SIGUSR2])?;
 
     let exit_flag = Arc::new(Mutex::new(false));
     let exit_flag_pwm = exit_flag.clone();
     let exit_flag_kchk = exit_flag.clone();
     let exit_usb_thd = exit_flag.clone();
     let exit_crypto_thd = exit_flag.clone();
+    let exit_usrsigs_thd = exit_flag.clone();
 
     let (s1, r1) = unbounded::<BlMode>(); // keys_check(), bl_pwm()
     let _s2 = s1.clone(); // forward signals to bl_pwm()
@@ -113,50 +113,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let usb_thread: thread::JoinHandle<()> =
         thread::spawn(|| usb_thd(exit_usb_thd, crypto_result2));
     // let http_server_thread = Thread::spawn(|| http_server(crypto_result1));
+    let usrsig_thread: thread::JoinHandle<()> =
+        thread::spawn(move || handle_usrsigs(_s2, &mut sigusr_signals, exit_usrsigs_thd));
 
     let rt = Builder::new_multi_thread()
         .enable_time()
         .enable_io()
-        .worker_threads(1)
+        .enable_all()
+        .worker_threads(3)
         .build()
         .unwrap();
     let http_server_thread = rt.spawn(async { http_server(crypto_result1) });
-    let crypto_thread = rt.spawn(async { crypto_thd(c_s1, exit_crypto_thd, crypto_result).await });
+    let crypto_thread = rt.spawn(crypto_thd(c_s1, exit_crypto_thd, crypto_result));
+    // let usrsig_thread = rt.spawn(handle_usrsigs(_s2, &mut sigusr_signals));
 
     let mut l = Lcd::new(LCD_CS, LCD_DC, LCD_RST, LCD_BL)
         .with_orientation(LCD_ORIENTATION)
         .with_max_buffer_size(64);
 
     let _ = lcd_setup(&mut l);
+    let mut btc: String = String::from("waiting...");
 
     // MAIN LOOP
     while !term_now.load(Ordering::Relaxed) {
-        lcd_display_stuff(&mut l, &r_s1);
+        lcd_display_stuff(&mut l, &r_s1, &mut btc);
 
         thread::sleep(Duration::from_secs(SCREEN_UPDATE_INTERVAL_SECS));
-
-        'inner: for signal in signals.pending() {
-            match signal {
-                SIGUSR1 => {
-                    debug!("{}(): Recd SIGUSR1", func_name!());
-                    _s2.send(BlMode::Off).unwrap();
-                    break 'inner;
-                }
-                SIGUSR2 => {
-                    debug!("{}(): Recd SIGUSR2", func_name!());
-                    _s2.send(BlMode::On).unwrap();
-                    break 'inner;
-                }
-                _ => {
-                    break 'inner;
-                }
-            }
-        }
     }
-    info!("[{exe_name}] Stopping threads...");
 
-    drop(_s2);
-    sigusr_handle.close();
+    info!("[{exe_name}] Stopping threads...");
 
     let mut exit_flag_p = exit_flag.lock().unwrap();
     *exit_flag_p = true;
@@ -171,6 +156,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     rt.shutdown_background();
     info!("tokio rt shutdown");
+
+    match usrsig_thread.join() {
+        Ok(result) => {
+            info!("handle_usrsigs() thread ended");
+        }
+        Err(e) => {
+            error!("Error stopping handle_usrsigs() thread");
+        }
+    }
 
     match usb_thread.join() {
         Ok(result) => {
@@ -213,7 +207,11 @@ fn lcd_setup(l: &mut Lcd) -> Result<(), Box<dyn Error>> {
     return Ok(());
 }
 
-fn lcd_display_stuff(l: &mut Lcd, r_s1: &crossbeam_channel::Receiver<CryptoResult>) {
+fn lcd_display_stuff(
+    l: &mut Lcd,
+    r_s1: &crossbeam_channel::Receiver<CryptoResult>,
+    btc: &mut String,
+) {
     l.lcd_set_window(0, 0, IMG_WIDTH, IMG_HEIGHT).unwrap();
 
     l.img_draw_rect2(0, 0, IMG_WIDTH, 32, WHITE);
@@ -299,16 +297,13 @@ fn lcd_display_stuff(l: &mut Lcd, r_s1: &crossbeam_channel::Receiver<CryptoResul
 
     l.img_draw_rect2(1, 218, IMG_WIDTH - 2, FONT16.height * 2 + 2 + 2 + 2, ORANGE);
 
-    let mut btc: String = String::from("waiting...");
     match r_s1.try_recv() {
         Ok(crypto_result) => {
-            btc = crypto_result.btc_cmp_str.clone();
+            *btc = crypto_result.btc_cmp_str.clone();
             crypto_result.print();
         }
         _ => {}
     };
-
-    let btc_len: usize = (IMG_WIDTH - btc.clone().len() * FONT16.width) / 2;
 
     l.img_draw_string(
         &((IMG_WIDTH - btc.len() * FONT16.width) / 2),
