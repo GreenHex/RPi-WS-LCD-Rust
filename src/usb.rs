@@ -32,131 +32,129 @@ pub mod usb {
 
     pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
         'outer: loop {
-            match available_ports() {
-                Ok(ports) => {
-                    if let Ok(port_name) = get_port(ports) {
-                        let builder = serialport::new(port_name.clone(), 115_200)
-                            .stop_bits(StopBits::One)
-                            .data_bits(DataBits::Eight)
-                            .parity(Parity::None);
+            if let Ok(ports) = available_ports() {
+                if let Ok(port_name) = get_port(ports) {
+                    let builder = serialport::new(port_name.clone(), 115_200)
+                        .stop_bits(StopBits::One)
+                        .data_bits(DataBits::Eight)
+                        .parity(Parity::None);
 
-                        info!("{}(): port_name: {}", func_name!(), port_name);
+                    info!("{}(): port_name: {}", func_name!(), port_name);
 
-                        let port = builder.open_native().unwrap_or_else(|e| {
-                            error!(
-                                "{}(): Failed to open \"{}\". Error: {:?}",
-                                func_name!(),
-                                port_name,
-                                e
-                            );
-                            ::std::process::exit(1);
-                        });
+                    let port = builder.open_native().unwrap_or_else(|e| {
+                        error!(
+                            "{}(): Failed to open \"{}\". Error: {:?}",
+                            func_name!(),
+                            port_name,
+                            e
+                        );
+                        ::std::process::exit(1);
+                    });
 
-                        match send_usb(port.try_clone().unwrap(), _CMD_ON) {
+                    match send_usb(port.try_clone().unwrap(), _CMD_ON) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("{}(): {:?}", func_name!(), e);
+                        }
+                    };
+                    match read_usb(port.try_clone().unwrap(), _CMD_OK) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("{}(): {:?}", func_name!(), e);
+                        }
+                    }
+
+                    match send_usb(port.try_clone().unwrap(), _CMD_RESET) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("{}(): {:?}", func_name!(), e);
+                        }
+                    }
+                    match read_usb(port.try_clone().unwrap(), _CMD_OK) {
+                        Ok(_) => {}
+                        Err(e) => {
+                            warn!("{}(): {:?}", func_name!(), e);
+                        }
+                    }
+
+                    'inner: while port.try_clone().unwrap().read_clear_to_send().unwrap() {
+                        match send_usb(port.try_clone().unwrap(), _CMD_READY) {
                             Ok(_) => {}
                             Err(e) => {
-                                warn!("{}(): {:?}", func_name!(), e);
+                                break 'inner;
                             }
                         };
                         match read_usb(port.try_clone().unwrap(), _CMD_OK) {
                             Ok(_) => {}
                             Err(e) => {
-                                warn!("{}(): {:?}", func_name!(), e);
+                                break 'inner;
                             }
                         }
 
-                        match send_usb(port.try_clone().unwrap(), _CMD_RESET) {
+                        if break_check(port.try_clone().unwrap(), m.clone()) {
+                            break 'outer;
+                        }
+
+                        match send_usb(
+                            port.try_clone().unwrap(),
+                            get_json_str(crypto_result.clone()).as_str(),
+                        ) {
                             Ok(_) => {}
                             Err(e) => {
-                                warn!("{}(): {:?}", func_name!(), e);
+                                break 'inner;
                             }
-                        }
-                        match read_usb(port.try_clone().unwrap(), _CMD_OK) {
+                        };
+
+                        match read_usb(port.try_clone().unwrap(), "") {
                             Ok(_) => {}
                             Err(e) => {
-                                warn!("{}(): {:?}", func_name!(), e);
+                                break 'inner;
                             }
+                        };
+
+                        if break_check(port.try_clone().unwrap(), m.clone()) {
+                            break 'outer;
                         }
 
-                        'inner: while port.try_clone().unwrap().read_clear_to_send().unwrap() {
-                            match send_usb(port.try_clone().unwrap(), _CMD_READY) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
-                            match read_usb(port.try_clone().unwrap(), _CMD_OK) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
+                        thread::sleep(Duration::from_millis(15000));
+
+                        if break_check(port.try_clone().unwrap(), m.clone()) {
+                            break 'outer;
+                        }
+
+                        match send_usb(port.try_clone().unwrap(), _CMD_FINISH) {
+                            Ok(_) => {}
+                            Err(e) => {
+                                break 'inner;
                             }
-
-                            if break_check(port.try_clone().unwrap(), m.clone()) {
-                                break 'outer;
+                        };
+                        match read_usb(port.try_clone().unwrap(), _CMD_RECEIVED) {
+                            Ok(_) => {}
+                            Err(e) => {
+                                break 'inner;
                             }
+                        };
 
-                            match send_usb(
-                                port.try_clone().unwrap(),
-                                get_json_str(crypto_result.clone()).as_str(),
-                            ) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
+                        if break_check(port.try_clone().unwrap(), m.clone()) {
+                            break 'outer;
+                        }
 
-                            match read_usb(port.try_clone().unwrap(), "") {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
+                        thread::sleep(Duration::from_secs(10));
 
-                            if break_check(port.try_clone().unwrap(), m.clone()) {
-                                break 'outer;
+                        match read_usb(port.try_clone().unwrap(), "") {
+                            Ok(_) => {}
+                            Err(e) => {
+                                break 'inner;
                             }
+                        };
 
-                            thread::sleep(Duration::from_millis(15000));
-
-                            if break_check(port.try_clone().unwrap(), m.clone()) {
-                                break 'outer;
-                            }
-
-                            match send_usb(port.try_clone().unwrap(), _CMD_FINISH) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
-                            match read_usb(port.try_clone().unwrap(), _CMD_RECEIVED) {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
-
-                            if break_check(port.try_clone().unwrap(), m.clone()) {
-                                break 'outer;
-                            }
-
-                            thread::sleep(Duration::from_secs(10));
-
-                            match read_usb(port.try_clone().unwrap(), "") {
-                                Ok(_) => {}
-                                Err(e) => {
-                                    break 'inner;
-                                }
-                            };
-
-                            if break_check(port.try_clone().unwrap(), m.clone()) {
-                                break 'outer;
-                            }
+                        if break_check(port.try_clone().unwrap(), m.clone()) {
+                            break 'outer;
                         }
                     }
                 }
-                _ => {}
             }
+
             let _exit = m.lock().unwrap();
 
             if *_exit {
@@ -179,7 +177,7 @@ pub mod usb {
             retval = true;
         }
         drop(_exit);
-        return retval;
+        retval
     }
 
     fn read_usb(mut port: Box<dyn SerialPort + 'static>, str: &str) -> Result<usize> {
@@ -193,11 +191,11 @@ pub mod usb {
                     std::str::from_utf8(&read_buff).unwrap().to_string()
                 );
                 debug!("{}(): Read {} bytes", func_name!(), read_buff_len);
-                return Ok(read_buff_len);
+                Ok(read_buff_len)
             }
             Err(e) => {
                 warn!("{}(): {:?}", func_name!(), e);
-                return Err(e.into());
+                Err(e.into())
             }
         }
     }
@@ -208,23 +206,23 @@ pub mod usb {
                 Ok(a) => {
                     debug!("{}(): Wrote {} bytes", func_name!(), a);
                     thread::sleep(Duration::from_millis(1000));
-                    return Ok(a);
+                    Ok(a)
                 }
                 Err(e) => {
                     warn!("{}(): {:?}", func_name!(), e);
-                    return Err(e.into());
+                    Err(e.into())
                 }
             },
             Ok(false) => {
                 warn!("{}(): {:?}", func_name!(), "Something bad happened");
-                return Err(serialport::Error {
+                Err(serialport::Error {
                     kind: ErrorKind::Unknown,
                     description: "Something bad happened".to_string(),
-                });
+                })
             }
             Err(e) => {
                 warn!("{}(): {:?}", func_name!(), e);
-                return Err(e.into());
+                Err(e)
             }
         }
     }
@@ -237,11 +235,7 @@ pub mod usb {
             } = info
             {
                 if info.vid == USB_DEV_VENDOR_ID && info.pid == USB_DEV_PRODUCT_ID {
-                    if info.serial_number == Some(String::from(USB_DEV_SERIAL_NUM)) {
-                        true
-                    } else {
-                        false
-                    }
+                    info.serial_number == Some(String::from(USB_DEV_SERIAL_NUM))
                 } else {
                     false
                 }
@@ -250,13 +244,13 @@ pub mod usb {
             }
         });
 
-        return if let Some(SerialPortInfo { port_name, .. }) = found_port {
-            Ok(String::from(port_name))
+        if let Some(SerialPortInfo { port_name, .. }) = found_port {
+            Ok(port_name)
         } else {
             Err(serialport::Error {
                 kind: ErrorKind::NoDevice,
                 description: "Device not plugged in".to_string(),
             })
-        };
+        }
     }
 }

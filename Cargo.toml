@@ -1,6 +1,6 @@
 [package]
-name = "LCD-Rust"
-version = "0.1.0"
+name = "LCD_Rust"
+version = "1.4.0"
 edition = "2024"
 
 [dependencies]

@@ -12,8 +12,8 @@ pub mod lcd {
     use log::{LevelFilter, debug, error, info, warn};
     use rppal::gpio::{Gpio, Level, OutputPin};
     use std::iter::*;
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
 
     const DELAY: u64 = 200;
     const IMG_ARR_SIZE: usize = IMG_WIDTH * IMG_HEIGHT * LCD_COLOUR_DEPTH;
@@ -136,10 +136,10 @@ pub mod lcd {
             spi_write_ubyte2(&CmdOrData::Cmd(PARTIAL_MODE_OFF));
 
             spi_write_ubyte2(&CmdOrData::Cmd(COLUMN_ADDRESS_SET));
-            spi_write_data_array(&[c0h, c0l + x_adj, c1h, c1l & 0xFF + x_adj]);
+            spi_write_data_array(&[c0h, c0l + x_adj, c1h, c1l + x_adj]);
 
             spi_write_ubyte2(&CmdOrData::Cmd(ROW_ADDRESS_SET));
-            spi_write_data_array(&[p0h, p0l + y_adj, p1h, p1l & 0xFF + y_adj]);
+            spi_write_data_array(&[p0h, p0l + y_adj, p1h, p1l + y_adj]);
 
             spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));
 
@@ -283,7 +283,7 @@ pub mod lcd {
             &mut self,
             x: &usize,
             y: &usize,
-            str: &String,
+            str: &str,
             font: &FontTable<N>,
             colour_fg: UWORD,
             colour_bg: UWORD,
@@ -315,28 +315,22 @@ pub mod lcd {
 
             let mut chunks = self.image.chunks((x_end - x_start) * LCD_COLOUR_DEPTH);
 
-            loop {
-                match chunks.next() {
-                    Some(x) => {
-                        spi_write_data_array(x);
-                    }
-                    None => {
-                        break;
-                    }
-                }
+            while let Some(x) = chunks.next() {
+                spi_write_data_array(x);
             }
+
             self
         }
 
         // print array for debugging
         pub fn img_print_data(&self) {
-            let mut chunks = self.image.chunks((IMG_WIDTH * LCD_COLOUR_DEPTH) as usize);
+            let mut chunks = self.image.chunks(IMG_WIDTH * LCD_COLOUR_DEPTH);
 
             loop {
                 match chunks.next() {
                     Some(c) => {
-                        for i in 0..(IMG_WIDTH * LCD_COLOUR_DEPTH) {
-                            print!("0x{:02X} ", c[i]);
+                        for item in c.iter().take(IMG_WIDTH * LCD_COLOUR_DEPTH) {
+                            print!("0x{:02X} ", item);
                         }
                         println!("\n");
                     }

@@ -12,8 +12,8 @@ pub mod pwm {
     use std::error::Error;
     use std::sync::Arc;
     use std::sync::Mutex;
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
 
     use crate::defs::defs::*;
     use crate::gpio::gpio::*;
@@ -55,9 +55,9 @@ pub mod pwm {
                             debug!("{}(): got: {:#?} {pulse}", func_name!(), 1);
                         }
                         Ok(BlMode::Step) => {
-                            pulse = pulse + 2;
+                            pulse += 2;
 
-                            if pulse < 1 || pulse > PERIOD_MS {
+                            if !(1..=PERIOD_MS).contains(&pulse) {
                                 pulse = 0;
                             }
                             debug!("{}(): got: {:#?} {pulse}", func_name!(), 2);
@@ -89,6 +89,5 @@ pub mod pwm {
                 error!("{}(): {:?}", func_name!(), e);
             }
         }
-        return;
     }
 }

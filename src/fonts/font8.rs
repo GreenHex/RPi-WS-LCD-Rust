@@ -43,7 +43,7 @@ pub mod font8 {
         height: 8,
     };
 
-    pub const FONT8_TABLE: [u8; 760] = [
+    pub static FONT8_TABLE: [u8; 760] = [
         // @0 ' ' (5 pixels wide)
         0x00, //
         0x00, //

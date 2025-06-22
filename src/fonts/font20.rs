@@ -44,7 +44,7 @@ pub mod font20 {
         height: 20,
     };
 
-    pub const FONT20_TABLE: [u8; 3800] = [
+    pub static FONT20_TABLE: [u8; 3800] = [
         // @0 ' ' (14 pixels wide)
         0x00, 0x00, //
         0x00, 0x00, //

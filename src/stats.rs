@@ -49,10 +49,10 @@ pub mod stats {
         debug!("{}(): {}", func_name!(), json_obj.dump());
 
         drop(crypto_result);
-        return json_obj;
+        json_obj
     }
 
     pub fn get_json_str(crypto_result: Arc<Mutex<CryptoResult>>) -> String {
-        return get_json_obj(crypto_result).dump();
+        get_json_obj(crypto_result).dump()
     }
 }

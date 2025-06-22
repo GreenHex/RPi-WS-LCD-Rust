@@ -44,7 +44,7 @@ pub mod font24 {
         height: 24,
     };
 
-    pub const FONT24_TABLE: [u8; 6840] = [
+    pub static FONT24_TABLE: [u8; 6840] = [
         // @0 ' ' (17 pixels wide)
         0x00, 0x00, 0x00, //
         0x00, 0x00, 0x00, //

@@ -44,7 +44,7 @@ pub mod font12 {
         height: 12,
     };
 
-    pub const FONT12_TABLE: [u8; 1140] = [
+    pub static FONT12_TABLE: [u8; 1140] = [
         // @0 ' ' (7 pixels wide)
         0x00, //
         0x00, //

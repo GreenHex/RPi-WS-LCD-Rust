@@ -5,7 +5,7 @@ After=network.target
 
 [Service]
 Type=simple
-# copy LCD-Rust executable to /usr/local/bin/LCD or change the path to executable below
+# copy "LCD_Rust" executable to "/usr/local/bin/LCD" or enter the full executable path below
 ExecStart=/usr/local/bin/LCD
 User=mvk
 Group=mvk

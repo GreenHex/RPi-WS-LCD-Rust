@@ -17,8 +17,8 @@ pub mod crypto {
     use std::sync::Arc;
     use std::sync::Mutex;
     use std::sync::atomic::{AtomicBool, Ordering};
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
     use systemstat::{Platform, System};
 
     impl CryptoResult {
@@ -31,12 +31,12 @@ pub mod crypto {
             btc_ath_cmp_diff_str: String,
         ) -> Self {
             Self {
-                btc_cmp: btc_cmp,
-                btc_ath: btc_ath,
-                btc_ath_cmp_diff: btc_ath_cmp_diff,
-                btc_cmp_str: btc_cmp_str,
-                btc_ath_str: btc_ath_str,
-                btc_ath_cmp_diff_str: btc_ath_cmp_diff_str,
+                btc_cmp,
+                btc_ath,
+                btc_ath_cmp_diff,
+                btc_cmp_str,
+                btc_ath_str,
+                btc_ath_cmp_diff_str,
             }
         }
 
@@ -187,13 +187,13 @@ pub mod crypto {
             .unwrap()
             .precision(Precision::Decimals(0));
 
-        return CryptoResult {
-            btc_cmp: btc_cmp as u64,
-            btc_ath: btc_ath as u64,
-            btc_ath_cmp_diff: (btc_cmp as i64 - btc_ath as i64) as i64,
+        CryptoResult {
+            btc_cmp,
+            btc_ath,
+            btc_ath_cmp_diff: (btc_cmp as i64 - btc_ath as i64),
             btc_cmp_str: f.fmt2(btc_cmp).to_string(),
             btc_ath_str: f.fmt2(btc_ath).to_string(),
             btc_ath_cmp_diff_str: f.fmt2(btc_cmp as i64 - btc_ath as i64).to_string(),
-        };
+        }
     }
 }

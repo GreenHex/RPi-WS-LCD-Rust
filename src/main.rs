@@ -21,8 +21,8 @@ use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::thread;
 use std::time::Duration;
-use std::{thread, u8};
 use stdext::function_name;
 use systemd_journal_logger::JournalLog;
 mod keys;
@@ -90,7 +90,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         flag::register(*sig, Arc::clone(&term_now))?;
     }
 
-    let mut sigusr_signals = Signals::new(&[SIGUSR1, SIGUSR2])?;
+    let mut sigusr_signals = Signals::new([SIGUSR1, SIGUSR2])?;
 
     let exit_flag = Arc::new(Mutex::new(false));
     let exit_flag_pwm = exit_flag.clone();
@@ -204,7 +204,7 @@ fn lcd_setup(l: &mut Lcd) -> Result<(), Box<dyn Error>> {
 
     l.img_clear(BLACK);
 
-    return Ok(());
+    Ok(())
 }
 
 fn lcd_display_stuff(
@@ -297,24 +297,19 @@ fn lcd_display_stuff(
 
     l.img_draw_rect2(1, 218, IMG_WIDTH - 2, FONT16.height * 2 + 2 + 2 + 2, ORANGE);
 
-    match r_s1.try_recv() {
-        Ok(crypto_result) => {
-            *btc = crypto_result.btc_cmp_str.clone();
-            crypto_result.print();
-        }
-        _ => {}
+    if let Ok(crypto_result) = r_s1.try_recv() {
+        *btc = crypto_result.btc_cmp_str.clone();
+        crypto_result.print();
     };
 
     l.img_draw_string(
         &((IMG_WIDTH - btc.len() * FONT16.width) / 2),
         &(220 + 4),
-        &btc,
+        btc,
         &FONT16,
         BLACK,
         ORANGE,
     );
 
     l.img_draw_image(0, 0, LCD_WIDTH, LCD_HEIGHT);
-
-    return;
 }

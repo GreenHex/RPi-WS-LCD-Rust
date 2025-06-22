@@ -18,8 +18,8 @@ pub mod keys {
     use std::error::Error;
     use std::sync::Arc;
     use std::sync::Mutex;
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
 
     use crate::defs::defs::*;
     use crate::pwm::pwm::*;
@@ -42,30 +42,25 @@ pub mod keys {
             drop(_exit);
             thread::sleep(Duration::from_millis(500));
         }
-        return;
     }
 
-    pub fn handle_usrsigs<'wait>(
+    pub fn handle_usrsigs(
         s: Sender<BlMode>,
-        sigusr_signals: &'wait mut signal_hook::iterator::SignalsInfo,
+        sigusr_signals: &mut signal_hook::iterator::SignalsInfo,
         m: Arc<Mutex<bool>>,
     ) {
         'outer: loop {
-            'inner: for signal in sigusr_signals.pending() {
+            if let Some(signal) = sigusr_signals.pending().next() {
                 match signal {
                     SIGUSR1 => {
                         debug!("{}(): Recd SIGUSR1", func_name!());
                         s.send(BlMode::Off).unwrap();
-                        break 'inner;
                     }
                     SIGUSR2 => {
                         debug!("{}(): Recd SIGUSR2", func_name!());
                         s.send(BlMode::On).unwrap();
-                        break 'inner;
                     }
-                    _ => {
-                        break 'inner;
-                    }
+                    _ => {}
                 }
             }
             let _exit = m.lock().unwrap();

@@ -10,8 +10,8 @@ pub mod gpio {
     use rppal::gpio::{Gpio, InputPin, IoPin, Level, OutputPin, Pin};
     use serialport::ErrorKind;
     use std::error::Error;
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
 
     use crate::defs::defs::*;
 
@@ -20,7 +20,7 @@ pub mod gpio {
         pin.write(level);
         drop(pin);
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn gpio_write2(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
@@ -38,13 +38,13 @@ pub mod gpio {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
     pub fn gpio_read(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
         let pin = Gpio::new()?.get(gpio_num)?.into_input_pullup();
 
-        return Ok(pin.read());
+        Ok(pin.read())
     }
 
     pub fn gpio_read2(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
@@ -64,7 +64,7 @@ pub mod gpio {
                 err = e;
             }
         }
-        return Err(err.into());
+        Err(err.into())
     }
 
     // this moves the pin out, there is no way of getting it back...
@@ -86,7 +86,7 @@ pub mod gpio {
             }
         }
 
-        return Err(err.into());
+        Err(err.into())
     }
 
     pub fn gpio_sleep_200_ms() {

@@ -44,16 +44,4 @@ pub mod http {
         }
         drop(crypto_result);
     }
-
-    fn set_thread_panic_hook() {
-        use std::{
-            panic::{set_hook, take_hook},
-            process::exit,
-        };
-        let orig_hook = take_hook();
-        set_hook(Box::new(move |panic_info| {
-            orig_hook(panic_info);
-            exit(1);
-        }));
-    }
 }

@@ -10,8 +10,8 @@ pub mod spi {
     use rppal::gpio::{Gpio, Level};
     use rppal::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
     use std::error::Error;
+    use std::thread;
     use std::time::Duration;
-    use std::{thread, u8};
 
     use crate::defs::defs::*;
     use crate::gpio::gpio::*;
@@ -30,8 +30,8 @@ pub mod spi {
     // }
 
     pub fn get_spi() -> rppal::spi::Spi {
-        return Spi::new(SPI_BUS, SPI_SLAVE_SELECT, SPI_FREQ_HZ, SPI_MODE)
-            .expect("Error: Could not open SPI port");
+        Spi::new(SPI_BUS, SPI_SLAVE_SELECT, SPI_FREQ_HZ, SPI_MODE)
+            .expect("Error: Could not open SPI port")
     }
 
     pub fn spi_write_ubyte(data: UBYTE, is_cmd: bool) {
@@ -46,8 +46,6 @@ pub mod spi {
                 error!("{}(): {:?}", func_name!(), e);
             }
         }
-
-        return;
     }
 
     pub fn spi_write_data_uword(data: UWORD) {
@@ -64,8 +62,6 @@ pub mod spi {
                 error!("{}(): {:?}", func_name!(), e);
             }
         }
-
-        return;
     }
 
     pub fn spi_write_ubyte2(cmd_or_data: &CmdOrData) {
@@ -96,14 +92,12 @@ pub mod spi {
                 error!("{}(): {:?}", func_name!(), e);
             }
         }
-        return;
     }
 
     pub fn spi_write_seq(sequence: &[CmdOrData]) {
         for item in sequence {
-            spi_write_ubyte2(&item);
+            spi_write_ubyte2(item);
         }
-        return;
     }
 
     pub fn spi_write_data_array(data: &[UBYTE]) {

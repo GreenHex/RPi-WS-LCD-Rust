@@ -43,7 +43,7 @@ pub mod font16 {
         width: 11,
         height: 16,
     };
-    pub const FONT16_TABLE: [u8; 3040] = [
+    pub static FONT16_TABLE: [u8; 3040] = [
         // @0 ' ' (11 pixels wide)
         0x00, 0x00, //
         0x00, 0x00, //
