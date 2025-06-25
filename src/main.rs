@@ -112,7 +112,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pwm_thread: thread::JoinHandle<()> = thread::spawn(|| bl_pwm(r1, exit_flag_pwm));
     let usb_thread: thread::JoinHandle<()> =
         thread::spawn(|| usb_thd(exit_usb_thd, crypto_result2));
-    // let http_server_thread = Thread::spawn(|| http_server(crypto_result1));
     let usrsig_thread: thread::JoinHandle<()> =
         thread::spawn(move || handle_usrsigs(_s2, &mut sigusr_signals, exit_usrsigs_thd));
 
@@ -120,12 +119,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .enable_time()
         .enable_io()
         .enable_all()
-        .worker_threads(3)
+        .worker_threads(2) // TWO threads
         .build()
         .unwrap();
     let http_server_thread = rt.spawn(async { http_server(crypto_result1) });
     let crypto_thread = rt.spawn(crypto_thd(c_s1, exit_crypto_thd, crypto_result));
-    // let usrsig_thread = rt.spawn(handle_usrsigs(_s2, &mut sigusr_signals));
 
     let mut l = Lcd::new(LCD_CS, LCD_DC, LCD_RST, LCD_BL)
         .with_orientation(LCD_ORIENTATION)

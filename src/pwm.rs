@@ -29,22 +29,25 @@ pub mod pwm {
     }
 
     pub fn bl_pwm(r: crossbeam_channel::Receiver<BlMode>, m: Arc<Mutex<bool>>) {
-        let mut pulse = PERIOD_MS / 2; // starting value
+        let mut pulse: u64 = PERIOD_MS / 2; // starting value
+	let mut old_pulse_val: u64 = 0;
 
         gpio_sleep_ms(1000); // wait for BL to switch on before rolling
 
         match gpio_get_output_pin(LCD_BL) {
             Ok(mut out_pin) => {
                 loop {
-                    out_pin
-                        .set_pwm(
-                            Duration::from_millis(PERIOD_MS),
-                            Duration::from_millis(pulse),
-                        )
-                        .expect("Error: bl_pwm(): pin.set_pwm()");
+			if old_pulse_val != pulse {
+                    	out_pin
+                        	.set_pwm(
+                            		Duration::from_millis(PERIOD_MS),
+                            		Duration::from_millis(pulse),
+                        	)
+                        	.expect("Error: bl_pwm(): pin.set_pwm()");
 
-                    debug!("{}(): pulse value: {pulse}", func_name!());
-
+                    	debug!("{}(): pulse value: {pulse}", func_name!());
+			old_pulse_val = pulse;
+			}
                     match r.recv() {
                         Ok(BlMode::Toggle) => {
                             if pulse > 0 {
