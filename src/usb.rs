@@ -6,8 +6,8 @@
  */
 
 pub mod usb {
-    use crate::defs::defs::*;
-    use crate::stats::stats::*;
+    use crate::defs::*;
+    use crate::stats::*;
     use ascii::AsAsciiStr;
     use log::{LevelFilter, debug, error, info, warn};
     use serialport::*;

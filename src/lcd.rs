@@ -6,9 +6,9 @@
  */
 
 pub mod lcd {
-    use crate::defs::defs::*;
-    use crate::gpio::gpio::*;
-    use crate::spi::spi::*;
+    use crate::defs::*;
+    use crate::gpio::*;
+    use crate::spi::*;
     use log::{LevelFilter, debug, error, info, warn};
     use rppal::gpio::{Gpio, Level, OutputPin};
     use std::iter::*;

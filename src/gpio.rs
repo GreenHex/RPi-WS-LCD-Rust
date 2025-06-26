@@ -4,96 +4,93 @@
  * 01-Jun-2025
  *
  */
+use log::{LevelFilter, debug, error, info, warn};
+use rppal::gpio::{Gpio, InputPin, IoPin, Level, OutputPin, Pin};
+use serialport::ErrorKind;
+use std::error::Error;
+use std::thread;
+use std::time::Duration;
 
-pub mod gpio {
-    use log::{LevelFilter, debug, error, info, warn};
-    use rppal::gpio::{Gpio, InputPin, IoPin, Level, OutputPin, Pin};
-    use serialport::ErrorKind;
-    use std::error::Error;
-    use std::thread;
-    use std::time::Duration;
+use crate::defs::*;
 
-    use crate::defs::defs::*;
+pub fn gpio_write(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
+    let mut pin = Gpio::new()?.get(gpio_num)?.into_output();
+    pin.write(level);
+    drop(pin);
 
-    pub fn gpio_write(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
-        let mut pin = Gpio::new()?.get(gpio_num)?.into_output();
-        pin.write(level);
-        drop(pin);
+    Ok(())
+}
 
-        Ok(())
-    }
-
-    pub fn gpio_write2(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
-        match Gpio::new() {
-            Ok(gpio) => match gpio.get(gpio_num) {
-                Ok(pin) => {
-                    pin.into_output().write(level);
-                }
-                Err(e) => {
-                    error!("{}(): {:?}", func_name!(), e);
-                }
-            },
+pub fn gpio_write2(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
+    match Gpio::new() {
+        Ok(gpio) => match gpio.get(gpio_num) {
+            Ok(pin) => {
+                pin.into_output().write(level);
+            }
             Err(e) => {
                 error!("{}(): {:?}", func_name!(), e);
             }
+        },
+        Err(e) => {
+            error!("{}(): {:?}", func_name!(), e);
         }
-
-        Ok(())
     }
 
-    pub fn gpio_read(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
-        let pin = Gpio::new()?.get(gpio_num)?.into_input_pullup();
+    Ok(())
+}
 
-        Ok(pin.read())
-    }
+pub fn gpio_read(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
+    let pin = Gpio::new()?.get(gpio_num)?.into_input_pullup();
 
-    pub fn gpio_read2(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
-        let err;
-        match Gpio::new() {
-            Ok(gpio) => match gpio.get(gpio_num) {
-                Ok(pin) => {
-                    return Ok(pin.into_input_pullup().read());
-                }
-                Err(e) => {
-                    error!("{}(): {:?}", func_name!(), e);
-                    err = e;
-                }
-            },
+    Ok(pin.read())
+}
+
+pub fn gpio_read2(gpio_num: UBYTE) -> Result<Level, Box<dyn Error>> {
+    let err;
+    match Gpio::new() {
+        Ok(gpio) => match gpio.get(gpio_num) {
+            Ok(pin) => {
+                return Ok(pin.into_input_pullup().read());
+            }
             Err(e) => {
                 error!("{}(): {:?}", func_name!(), e);
                 err = e;
             }
+        },
+        Err(e) => {
+            error!("{}(): {:?}", func_name!(), e);
+            err = e;
         }
-        Err(err.into())
     }
+    Err(err.into())
+}
 
-    // this moves the pin out, there is no way of getting it back...
-    pub fn gpio_get_output_pin(gpio_num: UBYTE) -> Result<OutputPin, Box<dyn Error>> {
-        let err;
-        match Gpio::new() {
-            Ok(gpio) => match gpio.get(gpio_num) {
-                Ok(pin) => {
-                    return Ok(pin.into_output());
-                }
-                Err(e) => {
-                    error!("{}(): {:?}", func_name!(), e);
-                    err = e;
-                }
-            },
+// this moves the pin out, there is no way of getting it back...
+pub fn gpio_get_output_pin(gpio_num: UBYTE) -> Result<OutputPin, Box<dyn Error>> {
+    let err;
+    match Gpio::new() {
+        Ok(gpio) => match gpio.get(gpio_num) {
+            Ok(pin) => {
+                return Ok(pin.into_output());
+            }
             Err(e) => {
                 error!("{}(): {:?}", func_name!(), e);
                 err = e;
             }
+        },
+        Err(e) => {
+            error!("{}(): {:?}", func_name!(), e);
+            err = e;
         }
-
-        Err(err.into())
     }
 
-    pub fn gpio_sleep_200_ms() {
-        thread::sleep(Duration::from_millis(200));
-    }
+    Err(err.into())
+}
 
-    pub fn gpio_sleep_ms(time_ms: u64) {
-        thread::sleep(Duration::from_millis(time_ms));
-    }
+pub fn gpio_sleep_200_ms() {
+    thread::sleep(Duration::from_millis(200));
+}
+
+pub fn gpio_sleep_ms(time_ms: u64) {
+    thread::sleep(Duration::from_millis(time_ms));
 }
