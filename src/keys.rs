@@ -15,6 +15,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
+/// Check display keys to change brightness or switch off or switch on the display
 pub fn keys_check(s: crossbeam_channel::Sender<BlMode>, m: Arc<Mutex<bool>>) {
     let pin1 = Gpio::new().unwrap().get(KEY1).unwrap().into_input_pullup();
     let pin2 = Gpio::new().unwrap().get(KEY2).unwrap().into_input_pullup();
@@ -35,6 +36,8 @@ pub fn keys_check(s: crossbeam_channel::Sender<BlMode>, m: Arc<Mutex<bool>>) {
     }
 }
 
+/// USRSIG1 and USRSIG2 are used to switch on or switch off the display
+/// using crontab. See LCD_Crontab for details.
 pub fn handle_usrsigs(
     s: Sender<BlMode>,
     sigusr_signals: &mut signal_hook::iterator::SignalsInfo,

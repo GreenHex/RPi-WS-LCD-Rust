@@ -5,6 +5,9 @@
  *
  */
 
+/// This needs clean-up. The LCD display documentation is not clear
+/// on what is happening in the Y direction... somehow it's working.
+/// Is there something obvious that's missing here?
 pub mod lcd {
     use crate::defs::*;
     use crate::gpio::*;

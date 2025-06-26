@@ -4,6 +4,8 @@
  * 05-Jun-2025
  *
  */
+/// Collect information ("stats") from device and pass it on
+/// to the requesting service.
 use chrono::Local;
 use local_ip_address::local_ip;
 use log::{LevelFilter, debug, error, info, warn};

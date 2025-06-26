@@ -4,6 +4,8 @@
  * 01-Jun-2025
  *
  */
+
+/// PWM module to control LCD display brightness
 use crate::defs::*;
 use crate::gpio::*;
 use log::{LevelFilter, debug, error, info, warn};

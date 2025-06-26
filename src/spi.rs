@@ -4,6 +4,8 @@
  * 01-Jun-2025
  *
  */
+
+/// Write to SPI interface to control LCD display.
 use crate::defs::*;
 use crate::gpio::*;
 use crate::lcd::lcd::*;

@@ -4,6 +4,8 @@
  * 04-Jun-2025
  *
  */
+
+/// USB communication module, needs major clean-up.
 use crate::defs::*;
 use crate::stats::*;
 use log::{LevelFilter, debug, error, info, warn};

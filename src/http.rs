@@ -12,6 +12,9 @@ use std::sync::Arc;
 use std::sync::Mutex;
 use tiny_http::{Response, Server};
 
+/// HTTP server to show statistics on a remote device (Raspberry
+/// Pi Zero W with Waveshare 1.3" 240x240 display)
+/// See: https://github.com/GreenHex/Pico-HTTP-Remote-Status-Display
 pub fn http_server(crypto_result: Arc<Mutex<CryptoResult>>) {
     let server_str = format!("{}:{}", HTTP_HOST, HTTP_PORT);
 
