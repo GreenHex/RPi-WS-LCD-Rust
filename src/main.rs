@@ -39,7 +39,7 @@ mod lcd;
 use crate::lcd::lcd::*;
 use CmdOrData::*;
 mod usb;
-use crate::usb::usb::usb_thd;
+use crate::usb::usb_thd;
 mod http;
 use crate::http::http_server;
 mod fonts;
@@ -222,14 +222,7 @@ fn lcd_display_stuff(
         WHITE,
     );
 
-    l.img_draw_string(
-        &(4),
-        &(42),
-        &("IP Address".to_string()),
-        &FONT8,
-        BLUE2,
-        BLACK,
-    );
+    l.img_draw_string(&(4), &(42), "IP Address", &FONT8, BLUE2, BLACK);
     l.img_draw_string(
         &((IMG_WIDTH - get_ip().len() * FONT12.width) - 4),
         &(42 + 24),
@@ -241,7 +234,7 @@ fn lcd_display_stuff(
     l.img_draw_rect2(0, 42 + 24 + 2 + 2 + FONT12.height * 2, IMG_WIDTH, 1, ORANGE);
 
     let (_, uptime, load, temp) = get_cpu_info();
-    l.img_draw_string(&(4), &(102), &("Uptime".to_string()), &FONT8, BLUE2, BLACK);
+    l.img_draw_string(&(4), &(102), "Uptime", &FONT8, BLUE2, BLACK);
     l.img_draw_string(
         &((IMG_WIDTH - uptime.len() * FONT12.width) - 4),
         &(102 + 24),
@@ -258,7 +251,7 @@ fn lcd_display_stuff(
         ORANGE,
     );
 
-    l.img_draw_string(&(4), &(162), &("Load".to_string()), &FONT8, BLUE2, BLACK);
+    l.img_draw_string(&(4), &(162), "Load", &FONT8, BLUE2, BLACK);
     l.img_draw_string(
         &((IMG_WIDTH / 2 - load.len() * FONT12.width) - 4),
         &(162 + 24),
@@ -268,14 +261,7 @@ fn lcd_display_stuff(
         BLACK,
     );
 
-    l.img_draw_string(
-        &(IMG_WIDTH / 2 + 6),
-        &(162),
-        &("Temp".to_string()),
-        &FONT8,
-        BLUE2,
-        BLACK,
-    );
+    l.img_draw_string(&(IMG_WIDTH / 2 + 6), &(162), "Temp", &FONT8, BLUE2, BLACK);
     l.img_draw_string(
         &(IMG_WIDTH / 2 + (IMG_WIDTH / 2 - temp.len() * FONT12.width) - 4),
         &(162 + 24),

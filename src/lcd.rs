@@ -313,10 +313,10 @@ pub mod lcd {
         ) -> &Self {
             // self.lcd_set_window(x_start, y_start, x_end, y_end).unwrap();
 
-            let mut chunks = self.image.chunks((x_end - x_start) * LCD_COLOUR_DEPTH);
+            let chunks = self.image.chunks((x_end - x_start) * LCD_COLOUR_DEPTH);
 
-            while let Some(x) = chunks.next() {
-                spi_write_data_array(x);
+            for chunk in chunks {
+                spi_write_data_array(chunk);
             }
 
             self

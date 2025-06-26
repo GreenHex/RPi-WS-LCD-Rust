@@ -6,7 +6,6 @@
  */
 use crate::defs::*;
 use crate::utils::*;
-use json;
 use log::{LevelFilter, debug, error, info, warn};
 use numfmt::{Formatter, Precision};
 use rusty_money::crypto;
