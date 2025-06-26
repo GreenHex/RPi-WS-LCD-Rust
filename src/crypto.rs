@@ -6,19 +6,13 @@
  */
 use crate::defs::CryptoResult;
 use crate::defs::*;
-use chrono::Local;
-use libc::CR0;
-use local_ip_address::local_ip;
 use log::{LevelFilter, debug, error, info, warn};
 use numfmt::{Formatter, Precision};
-use rusty_money::crypto;
 use rusty_money::{Money, iso};
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
-use systemstat::{Platform, System};
 
 impl CryptoResult {
     pub fn new(
@@ -109,7 +103,7 @@ pub async fn crypto_thd(
     m: Arc<Mutex<bool>>,
     crypto_result: Arc<Mutex<CryptoResult>>,
 ) {
-    let mut c_r: CryptoResult = CryptoResult::new_empty();
+    let mut c_r;
 
     'outer: loop {
         c_r = get_btc().await;

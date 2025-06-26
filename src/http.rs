@@ -7,10 +7,9 @@
 use crate::defs::*;
 use crate::stats::*;
 use log::{LevelFilter, debug, error, info, warn};
+use std::str::FromStr;
 use std::sync::Arc;
 use std::sync::Mutex;
-use std::{ascii::*, str::FromStr};
-use tiny_http::*;
 use tiny_http::{Response, Server};
 
 pub fn http_server(crypto_result: Arc<Mutex<CryptoResult>>) {

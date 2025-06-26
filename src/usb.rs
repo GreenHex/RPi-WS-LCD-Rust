@@ -6,12 +6,9 @@
  */
 use crate::defs::*;
 use crate::stats::*;
-use ascii::AsAsciiStr;
 use log::{LevelFilter, debug, error, info, warn};
 use serialport::*;
 use serialport::{SerialPortType, available_ports};
-use std::error::Error;
-use std::fs::read;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
@@ -78,13 +75,13 @@ pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
                 'inner: while port.try_clone().unwrap().read_clear_to_send().unwrap() {
                     match send_usb(port.try_clone().unwrap(), _CMD_READY) {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };
                     match read_usb(port.try_clone().unwrap(), _CMD_OK) {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     }
@@ -98,14 +95,14 @@ pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
                         get_json_str(crypto_result.clone()).as_str(),
                     ) {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };
 
                     match read_usb(port.try_clone().unwrap(), "") {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };
@@ -122,13 +119,13 @@ pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
 
                     match send_usb(port.try_clone().unwrap(), _CMD_FINISH) {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };
                     match read_usb(port.try_clone().unwrap(), _CMD_RECEIVED) {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };
@@ -141,7 +138,7 @@ pub fn usb_thd(m: Arc<Mutex<bool>>, crypto_result: Arc<Mutex<CryptoResult>>) {
 
                     match read_usb(port.try_clone().unwrap(), "") {
                         Ok(_) => {}
-                        Err(e) => {
+                        Err(_) => {
                             break 'inner;
                         }
                     };

@@ -4,17 +4,12 @@
  * 01-Jun-2025
  *
  */
-use log::{LevelFilter, error, info, warn};
-use rppal::gpio::{Gpio, Level};
-use rppal::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
-use std::error::Error;
-use std::thread;
-use std::time::Duration;
-
 use crate::defs::*;
 use crate::gpio::*;
 use crate::lcd::lcd::*;
-use CmdOrData::*;
+use log::{LevelFilter, error, info, warn};
+use rppal::gpio::Level;
+use rppal::spi::{Bus, Mode, SlaveSelect, Spi};
 
 pub const SPI_BUS: Bus = Bus::Spi0;
 pub const SPI_SLAVE_SELECT: SlaveSelect = SlaveSelect::Ss0;

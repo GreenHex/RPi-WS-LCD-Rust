@@ -4,23 +4,16 @@
  * 01-Jun-2025
  *
  */
+use crate::defs::*;
+use crate::pwm::*;
 use crossbeam_channel::*;
 use log::{LevelFilter, debug, error, info, warn};
-use rppal::gpio::{Gpio, Level};
-use signal_hook::consts::TERM_SIGNALS;
+use rppal::gpio::Gpio;
 use signal_hook::consts::*;
-use signal_hook::flag;
-use signal_hook::iterator::Signals;
-use signal_hook::low_level::exit;
-use signal_hook::*;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
-
-use crate::defs::*;
-use crate::pwm::*;
 
 pub fn keys_check(s: crossbeam_channel::Sender<BlMode>, m: Arc<Mutex<bool>>) {
     let pin1 = Gpio::new().unwrap().get(KEY1).unwrap().into_input_pullup();

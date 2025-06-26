@@ -1,65 +1,46 @@
-#![allow(unused_imports, dead_code, unused_assignments, unused_variables)]
 /**
  * main.rs
  * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
  * 30-May-2025
  *
  */
-use crossbeam_channel::{bounded, unbounded};
+mod crypto;
+mod defs;
+mod fonts;
+mod gpio;
+mod http;
+mod keys;
+mod lcd;
+mod pwm;
+mod spi;
+mod stats;
+mod usb;
+mod utils;
+
+use crate::crypto::*;
+use crate::defs::*;
+use crate::fonts::font8::*;
+use crate::fonts::font12::*;
+use crate::fonts::font16::*;
+use crate::http::http_server;
+use crate::keys::*;
+use crate::lcd::lcd::*;
+use crate::pwm::*;
+use crate::usb::usb_thd;
+use crate::utils::*;
+use crossbeam_channel::unbounded;
 use log::{LevelFilter, debug, error, info, warn};
-use rppal::gpio::{Gpio, Level};
-use rppal::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
-use serde_json::json;
-use serde_json::{Value, from_str};
 use signal_hook::consts::TERM_SIGNALS;
 use signal_hook::consts::*;
 use signal_hook::flag;
 use signal_hook::iterator::Signals;
-use signal_hook::low_level::exit;
-use signal_hook::*;
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::Duration;
-use stdext::function_name;
 use systemd_journal_logger::JournalLog;
-mod keys;
-use crate::keys::*;
-mod defs;
-use crate::defs::*;
-mod gpio;
-use crate::gpio::*;
-mod pwm;
-use crate::pwm::*;
-mod spi;
-use crate::spi::*;
-mod lcd;
-use crate::lcd::lcd::*;
-use CmdOrData::*;
-mod usb;
-use crate::usb::usb_thd;
-mod http;
-use crate::http::http_server;
-mod fonts;
-use crate::fonts::font8::*;
-use crate::fonts::font12::*;
-use crate::fonts::font16::*;
-use crate::fonts::font20::*;
-use crate::fonts::font24::*;
-use crate::fonts::font48::*;
-use crate::fonts::font50::*;
-use rand::Rng;
-use terminate_thread::Thread;
-mod utils;
-use crate::utils::*;
-mod crypto;
-use crate::crypto::*;
 use tokio::runtime::Builder;
-use tokio::runtime::Runtime;
-use tokio::time::*;
-mod stats;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let exe_name = std::env::current_exe()
@@ -129,7 +110,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_orientation(LCD_ORIENTATION)
         .with_max_buffer_size(64);
 
-    let _ = lcd_setup(&mut l);
+    l.lcd_init();
+
     let mut btc: String = String::from("waiting...");
 
     // MAIN LOOP
@@ -156,51 +138,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     info!("tokio rt shutdown");
 
     match usrsig_thread.join() {
-        Ok(result) => {
+        Ok(_) => {
             info!("handle_usrsigs() thread ended");
         }
         Err(e) => {
-            error!("Error stopping handle_usrsigs() thread");
+            error!("Error stopping handle_usrsigs() thread {:?}", e);
         }
     }
 
     match usb_thread.join() {
-        Ok(result) => {
+        Ok(_) => {
             info!("usb_thd() thread ended");
         }
         Err(e) => {
-            error!("Error stopping usb_thd() thread");
+            error!("Error stopping usb_thd() thread {:?}", e);
         }
     }
 
     match pwm_thread.join() {
-        Ok(result) => {
+        Ok(_) => {
             info!("bl_pwm() thread ended");
         }
         Err(e) => {
-            error!("Error stopping bl_pwm() thread");
+            error!("Error stopping bl_pwm() thread {:?}", e);
         }
     }
 
     match key_chk_thread.join() {
-        Ok(result) => {
+        Ok(_) => {
             info!("keys_check() thread ended");
         }
         Err(e) => {
-            error!("Error stopping keys_check() thread");
+            error!("Error stopping keys_check() thread {:?}", e);
         }
     }
 
     info!("[{exe_name}] exited");
-
-    Ok(())
-}
-
-fn lcd_setup(l: &mut Lcd) -> Result<(), Box<dyn Error>> {
-    l.lcd_init();
-    spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_WRITE));
-
-    l.img_clear(BLACK);
 
     Ok(())
 }

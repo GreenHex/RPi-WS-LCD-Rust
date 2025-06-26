@@ -4,17 +4,13 @@
  * 01-Jun-2025
  *
  */
+use crate::defs::*;
+use crate::gpio::*;
 use log::{LevelFilter, debug, error, info, warn};
-use rppal::gpio::OutputPin;
-use rppal::gpio::{Gpio, Level, Pin};
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
-
-use crate::defs::*;
-use crate::gpio::*;
 
 const PERIOD_MS: u64 = 8;
 

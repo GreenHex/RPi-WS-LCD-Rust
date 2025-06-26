@@ -7,10 +7,6 @@
 use crate::defs::*;
 use crate::utils::*;
 use log::{LevelFilter, debug, error, info, warn};
-use numfmt::{Formatter, Precision};
-use rusty_money::crypto;
-use rusty_money::{Money, iso};
-use std::error::Error;
 use std::sync::Arc;
 use std::sync::Mutex;
 

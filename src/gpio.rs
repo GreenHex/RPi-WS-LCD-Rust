@@ -4,14 +4,12 @@
  * 01-Jun-2025
  *
  */
+use crate::defs::*;
 use log::{LevelFilter, debug, error, info, warn};
-use rppal::gpio::{Gpio, InputPin, IoPin, Level, OutputPin, Pin};
-use serialport::ErrorKind;
+use rppal::gpio::{Gpio, Level, OutputPin};
 use std::error::Error;
 use std::thread;
 use std::time::Duration;
-
-use crate::defs::*;
 
 pub fn gpio_write(gpio_num: UBYTE, level: Level) -> Result<(), Box<dyn Error>> {
     let mut pin = Gpio::new()?.get(gpio_num)?.into_output();
