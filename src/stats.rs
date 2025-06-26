@@ -1,11 +1,10 @@
-/**
- * stats.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 04-Jun-2025
- *
- */
+//! Construct JSON string for easy handling of collected information.
+//!
+//! stats.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 04-Jun-2025
+//!
 
-/// Construct JSON string for easy handling of collected information.
 use crate::defs::*;
 use crate::utils::*;
 use log::{LevelFilter, debug, error, info, warn};

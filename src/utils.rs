@@ -1,11 +1,11 @@
-/**
- * utils.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 05-Jun-2025
- *
- */
-/// Collect information ("stats") from device and pass it on
-/// to the requesting service.
+//! Collect information ("stats") from device and pass it on
+//! to the requesting service.
+//!
+//! utils.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 05-Jun-2025
+//!
+
 use chrono::Local;
 use local_ip_address::local_ip;
 use log::{LevelFilter, debug, error, info, warn};

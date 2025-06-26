@@ -1,9 +1,10 @@
-/**
- * gpio.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 01-Jun-2025
- *
- */
+//! Simple GPIO functions
+//!
+//! gpio.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 01-Jun-2025
+//!
+
 use crate::defs::*;
 use log::{LevelFilter, debug, error, info, warn};
 use rppal::gpio::{Gpio, Level, OutputPin};

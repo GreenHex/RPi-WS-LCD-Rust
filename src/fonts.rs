@@ -1,9 +1,9 @@
-/**
- * fonts.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 16-Jun-2025
- *
- */
+//!
+//! fonts.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 16-Jun-2025
+//!
+
 pub mod font12;
 pub mod font16;
 pub mod font20;

@@ -1,9 +1,11 @@
-/**
- * lcd.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 01-Jun-2025
- *
- */
+//! SPI-LCD module.
+//! Much of it is based on this repository: <https://github.com/maciekglowka/lcd-ili9341-spi>
+//!
+//! lcd.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 01-Jun-2025
+//!
+//!
 
 /// This needs clean-up. The LCD display documentation is not clear
 /// on what is happening in the Y direction... somehow it's working.
@@ -97,7 +99,7 @@ pub mod lcd {
             spi_write_ubyte2(&CmdOrData::Cmd(0xB4)); // Column inversion
             spi_write_ubyte2(&CmdOrData::Data(0x07));
 
-            // spi_write_seq(&LCD_GAMMA_SEQ);
+            spi_write_seq(&LCD_GAMMA_SEQ);
 
             spi_write_ubyte2(&CmdOrData::Cmd(MEMORY_ACCESS_CONTROL));
             spi_write_ubyte2(&CmdOrData::Data(self.memory_access_control_value()));

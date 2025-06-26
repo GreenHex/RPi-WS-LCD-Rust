@@ -1,9 +1,11 @@
-/**
- * main.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 30-May-2025
- *
- */
+#![allow(unused_imports, dead_code, unused_assignments, unused_variables)]
+#![warn(missing_docs)]
+//!
+//! main.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 30-May-2025
+//!
+
 mod crypto;
 mod defs;
 mod fonts;

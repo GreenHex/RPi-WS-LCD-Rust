@@ -1,11 +1,10 @@
-/**
- * usb.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 04-Jun-2025
- *
- */
+//! USB communication module, needs major clean-up.
+//!
+//! usb.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 04-Jun-2025
+//!
 
-/// USB communication module, needs major clean-up.
 use crate::defs::*;
 use crate::stats::*;
 use log::{LevelFilter, debug, error, info, warn};

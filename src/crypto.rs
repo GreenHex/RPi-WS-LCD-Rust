@@ -1,9 +1,10 @@
-/**
- * crypto.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 05-Jun-2025
- *
- */
+//! Fetch crypto (BTC) rate from public server
+//!
+//! crypto.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 05-Jun-2025
+//!
+
 use crate::defs::CryptoResult;
 use crate::defs::*;
 use log::{LevelFilter, debug, error, info, warn};

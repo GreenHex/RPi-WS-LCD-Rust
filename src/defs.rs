@@ -1,16 +1,15 @@
-/**
- * defs.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 01-Jun-2025
- *
- */
+//! All the defs, The first few entries cab be customized.
+//!
+//! defs.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 01-Jun-2025
+//!
 
-// All the defs, The first few entries cab be customized.
 pub const SCREEN_UPDATE_INTERVAL_SECS: u64 = 5;
 
 /// HTTP server to show statistics on a remote device (Raspberry
 /// Pi Zero W with Waveshare 1.3" 240x240 display)
-/// See: https://github.com/GreenHex/Pico-HTTP-Remote-Status-Display
+/// See: <https://github.com/GreenHex/Pico-HTTP-Remote-Status-Display>
 pub const HTTP_HOST: &str = "0.0.0.0";
 pub const HTTP_PORT: &str = "8080";
 
@@ -22,7 +21,7 @@ pub const HTTP_CRYPTO_REQ_INTERVAL_SECS: u64 = 60 * 30;
 /// ID and serial number of USB device (Raspberry Pi Zero with
 /// Waveshare 1.3" 240x240 display) to show statistics on the
 /// display.
-/// See: https://github.com/GreenHex/Pico-USB-Remote-Status-Display
+/// See: <https://github.com/GreenHex/Pico-USB-Remote-Status-Display>
 pub const USB_DEV_VENDOR_ID: u16 = 0x2E8A;
 pub const USB_DEV_PRODUCT_ID: u16 = 0x000A;
 pub const USB_DEV_SERIAL_NUM: &str = "E6616407E361442F";

@@ -1,11 +1,10 @@
-/**
- * spi.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 01-Jun-2025
- *
- */
+//! Write to or read from SPI interface to control LCD display.
+//!
+//! spi.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 01-Jun-2025
+//!
 
-/// Write to SPI interface to control LCD display.
 use crate::defs::*;
 use crate::gpio::*;
 use crate::lcd::lcd::*;

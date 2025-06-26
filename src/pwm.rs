@@ -1,11 +1,10 @@
-/**
- * pwm.rs
- * Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
- * 01-Jun-2025
- *
- */
+//! PWM module to control LCD display brightness
+//!
+//! pwm.rs
+//! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
+//! 01-Jun-2025
+//!
 
-/// PWM module to control LCD display brightness
 use crate::defs::*;
 use crate::gpio::*;
 use log::{LevelFilter, debug, error, info, warn};
@@ -14,7 +13,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
-const PERIOD_MS: u64 = 8;
+const PERIOD_MS: u64 = 16;
 
 pub enum BlMode {
     Toggle = 1,
