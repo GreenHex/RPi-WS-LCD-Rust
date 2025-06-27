@@ -12,7 +12,10 @@ use log::{LevelFilter, debug, error, info, warn};
 use systemstat::{Platform, System};
 
 pub fn get_ip() -> String {
-    local_ip().unwrap().to_string()
+    match local_ip() {
+        Ok(ip) => ip.to_string(),
+        Err(e) => e.to_string(),
+    }
 }
 
 pub fn get_cpu_info() -> (String, String, String, String) {

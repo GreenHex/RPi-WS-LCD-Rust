@@ -67,7 +67,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("[{exe_name}] started");
 
-    /// Trap Ctrl-C, other exit signals
+    // Trap Ctrl-C, other exit signals
     let term_now = Arc::new(AtomicBool::new(false));
     for sig in TERM_SIGNALS {
         flag::register_conditional_shutdown(*sig, 1, Arc::clone(&term_now))?;
@@ -76,7 +76,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut sigusr_signals = Signals::new([SIGUSR1, SIGUSR2])?;
 
-    /// Flag(s) to signal thread loops to exit
+    // Flag(s) to signal thread loops to exit
     let exit_flag = Arc::new(Mutex::new(false));
     let exit_flag_pwm = exit_flag.clone();
     let exit_flag_kchk = exit_flag.clone();
@@ -100,7 +100,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let usrsig_thread: thread::JoinHandle<()> =
         thread::spawn(move || handle_usrsigs(_s2, &mut sigusr_signals, exit_usrsigs_thd));
 
-    /// These blocking threads require tokio::rt
+    // These blocking threads require tokio::rt
     let rt = Builder::new_multi_thread()
         .enable_time()
         .enable_io()
@@ -117,7 +117,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     l.lcd_init();
 
-    /// Don't know where to put this
+    // Don't know where to put this
     let mut btc: String = String::from("waiting...");
 
     // MAIN LOOP
@@ -129,14 +129,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("[{exe_name}] Stopping threads...");
 
-    /// Signal exit to all threads
+    // Signal exit to all threads
     let mut exit_flag_p = exit_flag.lock().unwrap();
     *exit_flag_p = true;
     drop(exit_flag_p);
 
     l.lcd_clear(BLACK).unwrap();
 
-    /// Exit blocking threads
+    // Exit blocking threads
     crypto_thread.abort_handle().abort();
     info!("crypto_thd() ended");
     http_server_thread.abort_handle().abort();

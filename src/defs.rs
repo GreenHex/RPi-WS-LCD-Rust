@@ -103,6 +103,7 @@ pub struct CryptoResult {
     pub btc_ath_cmp_diff_str: String,
 }
 
+/// get current function name
 #[macro_export]
 macro_rules! func_name {
     () => {
