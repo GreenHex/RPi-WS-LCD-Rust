@@ -1,5 +1,5 @@
 //! SPI-LCD module.
-//! Much of it is based on this repository: <https://github.com/maciekglowka/lcd-ili9341-spi>
+//! Much of this is based on this repository: <https://github.com/maciekglowka/lcd-ili9341-spi>
 //!
 //! lcd.rs
 //! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
@@ -17,18 +17,6 @@ pub mod lcd {
     use log::{LevelFilter, debug, error, info, warn};
     use rppal::gpio::Level;
     use std::iter::*;
-
-    const IMG_ARR_SIZE: usize = IMG_WIDTH * IMG_HEIGHT * LCD_COLOUR_DEPTH;
-
-    pub struct Lcd {
-        cs_pin: UBYTE,
-        dc_pin: UBYTE,  // Data / Command - 0=WriteCommand, 1=WriteData
-        rst_pin: UBYTE, // Reset
-        bl_pin: UBYTE,  // Backlight PWM
-        orientation: LcdOrientation,
-        max_buffer_size: usize,
-        image: [u8; IMG_ARR_SIZE],
-    }
 
     impl Lcd {
         pub fn new(cs_pin: UBYTE, dc_pin: UBYTE, rst_pin: UBYTE, bl_pin: UBYTE) -> Self {
@@ -339,6 +327,72 @@ pub mod lcd {
             }
         }
     }
+
+    pub const IMG_ARR_SIZE: usize = IMG_WIDTH * IMG_HEIGHT * LCD_COLOUR_DEPTH;
+
+    pub const WHITE: UWORD = 0xFFFF;
+    pub const BLACK: UWORD = 0x0000;
+    pub const BLUE: UWORD = 0x001F;
+    pub const BRED: UWORD = 0xF81F;
+    pub const GRED: UWORD = 0xFFE0;
+    pub const GBLUE: UWORD = 0x07FF;
+    pub const RED: UWORD = 0xF800;
+    pub const MAGENTA: UWORD = 0xF81F;
+    pub const GREEN: UWORD = 0x07E0;
+    pub const CYAN: UWORD = 0x7FFF;
+    pub const YELLOW: UWORD = 0xFFE0;
+    pub const BROWN: UWORD = 0xBC40;
+    pub const BRRED: UWORD = 0xFC07;
+    pub const GRAY: UWORD = 0x8430;
+    pub const TANGARINE: UWORD = 0xFCCC;
+    pub const ORANGE: UWORD = 0xFE00;
+    pub const RED2: UWORD = 0xF841;
+    pub const BLUE2: UWORD = 0x0E3F;
+
+    #[derive(Debug)]
+    pub enum LcdOrientation {
+        Rotate0,
+        Rotate90,
+        Rotate180,
+        Rotate270,
+    }
+
+    pub const LCD_ORIENTATION: LcdOrientation = LcdOrientation::Rotate90;
+
+    pub struct Lcd {
+        cs_pin: UBYTE,
+        dc_pin: UBYTE,  // Data / Command - 0=WriteCommand, 1=WriteData
+        rst_pin: UBYTE, // Reset
+        bl_pin: UBYTE,  // Backlight PWM
+        orientation: LcdOrientation,
+        max_buffer_size: usize,
+        image: [u8; IMG_ARR_SIZE],
+    }
+
+    // REF: https://github.com/maciekglowka/lcd-ili9341-spi/blob/main/src/utils.rs
+    pub(crate) fn u16_to_bytes(val: u16) -> (u8, u8) {
+        ((val >> 8) as u8, (val & 0xff) as u8)
+    }
+
+    /// Combine RGB channels into 565 RGB format - as u16
+    pub fn rgb_to_u16(r: u8, g: u8, b: u8) -> u16 {
+        let rb = r >> 3;
+        let gb = g >> 2;
+        let bb = b >> 3;
+        (rb as u16) << 11 | (gb as u16) << 5 | bb as u16
+    }
+
+    /// Combine RGB channels into 565 RGB format - as a (u8, u8) tuple
+    pub fn rgb_to_u8(r: u8, g: u8, b: u8) -> (u8, u8) {
+        u16_to_bytes(rgb_to_u16(r, g, b))
+    }
+
+    /// Create a single colored buffer of N/2 pixel length
+    pub fn color_buffer<const N: usize>(color: u16) -> [u8; N] {
+        let (h, l) = u16_to_bytes(color);
+        core::array::from_fn(|i| if i % 2 == 0 { h } else { l })
+    }
+
     #[derive(Debug)]
     pub enum LcdError {
         PinError,
