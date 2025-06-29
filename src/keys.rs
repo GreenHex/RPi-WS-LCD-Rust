@@ -16,6 +16,7 @@ use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
 
+/// Keys polling thread
 pub fn keys_check(s: crossbeam_channel::Sender<BlMode>, m: Arc<Mutex<bool>>) {
     let pin1 = Gpio::new().unwrap().get(KEY1).unwrap().into_input_pullup();
     let pin2 = Gpio::new().unwrap().get(KEY2).unwrap().into_input_pullup();

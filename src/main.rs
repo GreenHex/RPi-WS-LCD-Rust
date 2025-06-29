@@ -204,6 +204,7 @@ fn lcd_display_stuff(
     );
 
     l.img_draw_string(&(4), &(42), "IP Address", &FONT8, BLUE2, BLACK);
+    l.img_draw_rect2(0, 42 + 24, IMG_WIDTH, FONT12.height, BLACK);
     l.img_draw_string(
         &((IMG_WIDTH - get_ip().len() * FONT12.width) - 4),
         &(42 + 24),
@@ -216,6 +217,7 @@ fn lcd_display_stuff(
 
     let (_, uptime, load, temp) = get_cpu_info();
     l.img_draw_string(&(4), &(102), "Uptime", &FONT8, BLUE2, BLACK);
+    l.img_draw_rect2(0, 102 + 24, IMG_WIDTH, FONT12.height, BLACK);
     l.img_draw_string(
         &((IMG_WIDTH - uptime.len() * FONT12.width) - 4),
         &(102 + 24),
@@ -242,7 +244,14 @@ fn lcd_display_stuff(
         BLACK,
     );
 
-    l.img_draw_string(&(IMG_WIDTH / 2 + 6), &(162), "Temp", &FONT8, BLUE2, BLACK);
+    l.img_draw_string(
+        &(IMG_WIDTH / 2 + 6),
+        &(162),
+        "CPU Temp",
+        &FONT8,
+        BLUE2,
+        BLACK,
+    );
     l.img_draw_string(
         &(IMG_WIDTH / 2 + (IMG_WIDTH / 2 - temp.len() * FONT12.width) - 4),
         &(162 + 24),

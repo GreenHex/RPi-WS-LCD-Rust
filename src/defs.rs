@@ -1,4 +1,4 @@
-//! All the defs, The first few entries cab be customized.
+//! All the defs, The first few entries can be customized.
 //!
 //! defs.rs
 //! Copyright (c) 2025 Vinodh Kumar Markapuram <GreenHex@gmail.com>
